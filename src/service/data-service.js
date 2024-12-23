@@ -3,6 +3,7 @@ import {
     XML_DATA_TYPES,
     PRIVATE_HASH_SUBJECT_PREFIX,
     V0_PRIVATE_ASSERTION_PREDICATE,
+    CHUNK_BYTE_SIZE,
 } from '../constants/constants.js';
 
 class DataService {
@@ -13,8 +14,9 @@ class DataService {
         this.cryptoService = ctx.cryptoService;
     }
 
-    calculateChunksAmount(assertion) {
-        return kcTools.calculateNumberOfChunks(assertion);
+    calculateAssertionSize(assertion) {
+        const numberOfChunks = kcTools.calculateNumberOfChunks(assertion, CHUNK_BYTE_SIZE);
+        return numberOfChunks * CHUNK_BYTE_SIZE;
     }
 
     createTripleAnnotations(groupedTriples, annotationPredicate, annotations) {

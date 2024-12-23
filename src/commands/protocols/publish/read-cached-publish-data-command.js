@@ -21,7 +21,7 @@ class ReadCachedPublishDataCommand extends Command {
     async execute(command) {
         const { event } = command.data;
         const eventData = JSON.parse(event.data);
-        const { id, publishOperationId, merkleRoot, chunksAmount } = eventData;
+        const { id, publishOperationId, merkleRoot, byteSize } = eventData;
         const { blockchain, contractAddress } = event;
         const operationId = await this.operationIdService.generateOperationId(
             OPERATION_ID_STATUS.PUBLISH_FINALIZATION.PUBLISH_FINALIZATION_START,
@@ -60,10 +60,10 @@ class ReadCachedPublishDataCommand extends Command {
                 contract: contractAddress,
                 tokenId: id,
                 merkleRoot,
-                chunksAmount,
                 remotePeerId: cachedData.remotePeerId,
                 publishOperationId,
                 assertion: cachedData.assertion,
+                byteSize,
                 cachedMerkleRoot: cachedData.merkleRoot,
             },
             command.sequence,

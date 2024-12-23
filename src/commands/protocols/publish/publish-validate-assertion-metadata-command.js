@@ -16,15 +16,7 @@ class PublishValidateAssertionMetadataCommand extends ValidateAssertionMetadataC
     }
 
     async execute(command) {
-        const {
-            operationId,
-            ual,
-            blockchain,
-            assertion,
-            merkleRoot,
-            cachedMerkleRoot,
-            chunksAmount,
-        } = command.data;
+        const { operationId, ual, blockchain, merkleRoot, cachedMerkleRoot } = command.data;
 
         await this.operationIdService.updateOperationIdStatus(
             operationId,
@@ -41,18 +33,6 @@ class PublishValidateAssertionMetadataCommand extends ValidateAssertionMetadataC
                     this.errorType,
                     true,
                 );
-
-                const calculatedChunksAmount = this.dataService.calculateChunksAmount(assertion);
-
-                if (chunksAmount !== calculatedChunksAmount) {
-                    await this.handleError(
-                        operationId,
-                        blockchain,
-                        `Invalid Chunks Amount for Knowledge Collection with UAL: ${ual}. Received value from blockchain: ${chunksAmount}, Calculated value: ${calculatedChunksAmount}`,
-                        this.errorType,
-                        true,
-                    );
-                }
             }
         } catch (e) {
             await this.handleError(operationId, blockchain, e.message, this.errorType, true);

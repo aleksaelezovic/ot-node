@@ -560,11 +560,23 @@ export async function queryVoid(tripleStoreRepositories, repository, query) {
 }
 
 function hasSpecialCharactersInIRI(assertion) {
-    // Match only triples' subjects that contain special characters
-    // eslint-disable-next-line no-useless-escape
-    const subjectPattern = /^<[^>]*[{}\\\|][^>]*>(?=\s+<)/;
     const lines = assertion.split('\n');
-    return lines.some((line) => subjectPattern.test(line.trim()));
+    // {, }, |, ^, `, and \ without u or U
+    // eslint-disable-next-line no-useless-escape
+    const iriPattern = /<[^>]*(?:[\s{}\|^`]|\\(?![uU]))[^>]*>/;
+
+    return lines.some((line) => {
+        // Split quad into subject, predicate, object (ignore graph if present)
+        const parts = line.trim().split(' ');
+
+        // Check each part only if it starts with < and ends with >
+        return parts.some((part) => {
+            if (part.startsWith('<') && part.endsWith('>')) {
+                return iriPattern.test(part);
+            }
+            return false;
+        });
+    });
 }
 
 export async function insertAssertionsIntoV8UnifiedRepository(
@@ -586,7 +598,8 @@ export async function insertAssertionsIntoV8UnifiedRepository(
 
         if (hasSpecialCharactersInIRI(publicAssertion)) {
             logger.warn(
-                `Public assertion with tokenId: ${tokenId} contains illegal characters in IRI. Skipping...`,
+                `Public assertion with tokenId: ${tokenId} contains illegal characters in IRI. Skipping...
+                Public assertion: ${publicAssertion}`,
             );
             successfullyProcessed.push(tokenId);
             continue;

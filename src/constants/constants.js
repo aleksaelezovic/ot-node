@@ -129,6 +129,8 @@ export const PEER_OFFLINE_LIMIT = 24 * 60 * 60 * 1000;
 
 export const CONTENT_ASSET_HASH_FUNCTION_ID = 1;
 
+export const CHUNK_BYTE_SIZE = 32;
+
 export const PARANET_SYNC_KA_COUNT = 50;
 export const PARANET_SYNC_RETRIES_LIMIT = 3;
 export const PARANET_SYNC_RETRY_DELAY_MS = 60 * 1000;

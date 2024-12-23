@@ -487,7 +487,7 @@
                         "enabled": false,
                         "package": "./blockchain/implementation/ot-parachain/ot-parachain-service.js",
                         "config": {
-                            "hubContractAddress": "0x881449B372eB0eA34d0bF450839182dcC15A1dcA",
+                            "hubContractAddress": "0x8C623f113464Ea716D8A6706C3b553021E8b09d7",
                             "rpcEndpoints": [
                                 "https://lofar-testnet.origin-trail.network",
                                 "https://lofar-testnet.origintrail.network"
@@ -500,7 +500,7 @@
                         "package": "./blockchain/implementation/gnosis/gnosis-service.js",
 
                         "config": {
-                            "hubContractAddress": "0xae1b378Ad5418ca437AceF78EDc8b40607eb5A1b",
+                            "hubContractAddress": "0xA894a0EBCD060d46766aB21459ed35a1eB40e4cF",
                             "gasPriceOracleLink": "https://blockscout.chiadochain.net/api/v1/gas-price-oracle",
                             "rpcEndpoints": ["https://rpc.chiadochain.net"],
                             "operatorFee": 0
@@ -580,8 +580,8 @@
                             },
                             "hubContractAddress": {
                                 "base:84532": "0xCdC3945ed33941e359391574aAB16F274D53e641",
-                                "otp:20430": "0x881449B372eB0eA34d0bF450839182dcC15A1dcA",
-                                "gnosis:10200": "0xae1b378Ad5418ca437AceF78EDc8b40607eb5A1b"
+                                "otp:20430": "0x8C623f113464Ea716D8A6706C3b553021E8b09d7",
+                                "gnosis:10200": "0xA894a0EBCD060d46766aB21459ed35a1eB40e4cF"
                             }
                         }
                     }

@@ -442,7 +442,6 @@ export async function getAssertionFromV6TripleStore(
                     logger.warn(
                         `Private assertion with id ${privateAssertionId} could not be fetched from ${PRIVATE_CURRENT} repository even though it should exist`,
                     );
-                    success = false;
                 }
             }
         } else {
@@ -467,6 +466,7 @@ export async function getAssertionFromV6TripleStore(
         publicAssertion,
         privateAssertion,
         success,
+        assertionId,
     };
 }
 
@@ -559,6 +559,26 @@ export async function queryVoid(tripleStoreRepositories, repository, query) {
     });
 }
 
+function hasSpecialCharactersInIRI(assertion) {
+    const lines = assertion.split('\n');
+    // {, }, |, ^, `, and \ without u or U
+    // eslint-disable-next-line no-useless-escape
+    const iriPattern = /<[^>]*(?:[\s{}\|^`]|\\(?![uU]))[^>]*>/;
+
+    return lines.some((line) => {
+        // Split quad into subject, predicate, object (ignore graph if present)
+        const parts = line.trim().split(' ');
+
+        // Check each part only if it starts with < and ends with >
+        return parts.some((part) => {
+            if (part.startsWith('<') && part.endsWith('>')) {
+                return iriPattern.test(part);
+            }
+            return false;
+        });
+    });
+}
+
 export async function insertAssertionsIntoV8UnifiedRepository(
     v6Assertions,
     tripleStoreRepositories,
@@ -572,6 +592,15 @@ export async function insertAssertionsIntoV8UnifiedRepository(
 
         // Assertion with assertionId does not exist in triple store. Continue
         if (!publicAssertion) {
+            successfullyProcessed.push(tokenId);
+            continue;
+        }
+
+        if (hasSpecialCharactersInIRI(publicAssertion)) {
+            logger.warn(
+                `Public assertion with tokenId: ${tokenId} contains illegal characters in IRI. Skipping...
+                Public assertion: ${publicAssertion}`,
+            );
             successfullyProcessed.push(tokenId);
             continue;
         }

@@ -37,6 +37,9 @@ dotenv.config({ path: ENV_PATH, override: true });
 const require = createRequire(import.meta.url);
 const { setTimeout } = require('timers/promises');
 
+const successfulInsertsSet = new Set();
+const totalInsertsSet = new Set();
+
 async function processAndInsertNewerAssertions(
     blockchainDetails,
     blockchainName,
@@ -129,6 +132,9 @@ async function processAndInsertNewerAssertions(
             logger.info(
                 `Successfully inserted public/private assertions into V8 triple store for tokenId: ${newTokenId}`,
             );
+
+            successfulInsertsSet.add(assertionId);
+            totalInsertsSet.add(newTokenId);
         }
 
         const inserted = await sqliteDb.insertAssertion(
@@ -199,6 +205,20 @@ async function processAndInsertAssertions(
     const successfulInserts = results
         .filter((result) => result.exists)
         .map((result) => result.tokenId);
+
+    // Find the assertion associated with the tokenId
+    successfulInserts.forEach((tokenId) => {
+        const assertionInserted = assertionsToCheck.find(
+            (assertion) => assertion.tokenId === tokenId,
+        );
+        if (assertionInserted) {
+            successfulInsertsSet.add(assertionInserted.assertionId);
+        }
+    });
+
+    successfulInserts.forEach((tokenId) => {
+        totalInsertsSet.add(tokenId);
+    });
 
     logger.info(`Number of successfully inserted assertions: ${successfulInserts.length}`);
 
@@ -482,6 +502,13 @@ async function main() {
                 rpcEndpoints,
             );
             logger.timeEnd(`PROCESS AND INSERT NEWER ASSERTIONS FOR ${blockchainName}`);
+
+            logger.info(
+                `Total amount of unique successfully inserted assertions for ${blockchainName}: ${successfulInsertsSet.size}`,
+            );
+            logger.info(
+                `Total amount of assertions inserted for ${blockchainName}: ${totalInsertsSet.size}`,
+            );
         }
     } finally {
         // Close database connection after all blockchains are processed
@@ -489,6 +516,11 @@ async function main() {
     }
 
     markMigrationAsSuccessfull();
+
+    logger.info(
+        `Total amount of unique successfully inserted assertions: ${successfulInsertsSet.size}`,
+    );
+    logger.info(`Total amount of assertions inserted: ${totalInsertsSet.size}`);
 }
 
 main();

@@ -1102,7 +1102,11 @@ class Web3Service {
     }
 
     async getStakeWeightedAverageAsk() {
-        return this.callContractFunction(this.contracts.Ask, 'getStakeWeightedAverageAsk', []);
+        return this.callContractFunction(
+            this.contracts.AskStorage,
+            'getStakeWeightedAverageAsk',
+            [],
+        );
     }
 
     async getTimeUntilNextEpoch() {

@@ -19,29 +19,15 @@ export const VISIBILITY = {
     PRIVATE: 'private',
 };
 export const BATCH_SIZE = 50;
-// // LOCAL TESTING
-// export const NODERC_CONFIG_PATH =
-//     '/Users/zvonimir/projects/ot-node/v8-data-migration/.origintrail_noderc';
-// export const ENV_PATH = '/Users/zvonimir/projects/ot-node/data-migration/.env';
-// export const DEFAULT_CONFIG_PATH = '/Users/zvonimir/projects/ot-node/config/config.json';
-// export const DATA_MIGRATION_DIR =
-//     '/Users/zvonimir/projects/ot-node/v8-data-migration/data/data-migration';
-// export const MIGRATION_PROGRESS_FILE =
-//     '/Users/zvonimir/projects/ot-node/v8-data-migration/data/migrations/v8DataMigration';
-// // LOCAL TESTING END
-
-// REMOTE
 export const DEFAULT_CONFIG_PATH = '/root/ot-node/current/config/config.json';
 export const NODERC_CONFIG_PATH = '/root/ot-node/.origintrail_noderc';
 export const DATA_MIGRATION_DIR = '/root/ot-node/data/data-migration';
 export const ENV_PATH = '/root/ot-node/current/.env';
 export const MIGRATION_PROGRESS_FILE = '/root/ot-node/data/migrations/v8DataMigration';
-// TODO: add urls
 export const DB_URLS = {
-    testnet: '',
+    testnet: 'https://hosting.origin-trail.network/csv/testnet.db',
     mainnet: '',
 };
-// REMOTE END
 
 const require = createRequire(import.meta.url);
 

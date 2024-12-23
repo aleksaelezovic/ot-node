@@ -33,7 +33,7 @@ export const UINT40_MAX_BN = BigNumber.from(2).pow(40).sub(1);
 
 export const UINT32_MAX_BN = BigNumber.from(2).pow(32).sub(1);
 
-export const ONE_ETHER = BigNumber.from(1e18);
+export const ONE_ETHER = BigNumber.from('1000000000000000000');
 
 export const HASH_RING_SIZE = ethers.constants.MaxUint256;
 

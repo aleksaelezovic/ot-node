@@ -8,7 +8,8 @@ class ValidateAssertionMetadataCommand extends Command {
     }
 
     async execute(command) {
-        const { operationId, ual, blockchain, merkleRoot, cachedMerkleRoot } = command.data;
+        const { operationId, ual, blockchain, merkleRoot, cachedMerkleRoot, byteSize, assertion } =
+            command.data;
 
         await this.operationIdService.updateOperationIdStatus(
             operationId,
@@ -22,6 +23,20 @@ class ValidateAssertionMetadataCommand extends Command {
                     operationId,
                     blockchain,
                     `Invalid Merkle Root for Knowledge Collection with UAL: ${ual}. Received value from blockchain: ${merkleRoot}, Cached value from publish operation: ${cachedMerkleRoot}`,
+                    this.errorType,
+                    true,
+                );
+            }
+
+            const calculatedAssertionSize = this.dataService.calculateAssertionSize(
+                assertion.public ?? assertion,
+            );
+
+            if (byteSize !== calculatedAssertionSize) {
+                await this.handleError(
+                    operationId,
+                    blockchain,
+                    `Invalid Assertion Size for Knowledge Collection with UAL: ${ual}. Received value from blockchain: ${byteSize}, Calculated value: ${calculatedAssertionSize}`,
                     this.errorType,
                     true,
                 );

@@ -97,7 +97,11 @@ class PublishService extends OperationService {
         // Not all requests sent, still possible to reach minimum replication,
         // schedule requests for leftover nodes
         const potentialCompletedNumber = completedNumber + leftoverNodes.length;
-        if (leftoverNodes.length > 0 && potentialCompletedNumber >= minAckResponses) {
+        if (
+            leftoverNodes.length > 0 &&
+            potentialCompletedNumber >= minAckResponses &&
+            (totalResponses - 1) % batchSize === 0
+        ) {
             await this.scheduleOperationForLeftoverNodes(command.data, leftoverNodes);
         }
     }

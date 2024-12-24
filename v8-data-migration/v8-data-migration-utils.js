@@ -29,9 +29,10 @@ export function ensureDirectoryExists(dirPath) {
         logger.info(`Created directory: ${dirPath}`);
 
         if (!fs.existsSync(dirPath)) {
-            throw new Error(
+            logger.error(
                 `Something went wrong. Directory: ${dirPath} does not exist after creation.`,
             );
+            process.exit(1);
         }
     }
 }

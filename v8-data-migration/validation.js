@@ -1,8 +1,11 @@
+import logger from './logger.js';
+
 export function validateConfig(config) {
     if (!config || typeof config !== 'object') {
-        throw new Error(
+        logger.error(
             `[VALIDATION ERROR] Config is not defined or it is not an object. Config: ${config}`,
         );
+        process.exit(1);
     }
 }
 
@@ -45,33 +48,37 @@ export function validateUal(ual) {
 
 export function validateTripleStoreRepositories(tripleStoreRepositories) {
     if (!tripleStoreRepositories || typeof tripleStoreRepositories !== 'object') {
-        throw new Error(
+        logger.error(
             `[VALIDATION ERROR] Triple store repositories is not defined or it is not an object. Triple store repositories: ${tripleStoreRepositories}`,
         );
+        process.exit(1);
     }
 }
 
 export function validateTripleStoreImplementation(tripleStoreImplementation) {
     if (!tripleStoreImplementation || typeof tripleStoreImplementation !== 'string') {
-        throw new Error(
+        logger.error(
             `[VALIDATION ERROR] Triple store implementation is not defined or it is not a string. Triple store implementation: ${tripleStoreImplementation}`,
         );
+        process.exit(1);
     }
 }
 
 export function validateTripleStoreConfig(tripleStoreConfig) {
     if (!tripleStoreConfig || typeof tripleStoreConfig !== 'object') {
-        throw new Error(
+        logger.error(
             `[VALIDATION ERROR] Triple store config is not defined or it is not an object. Triple store config: ${tripleStoreConfig}`,
         );
+        process.exit(1);
     }
 }
 
 export function validateRepository(repository) {
     if (!repository || typeof repository !== 'string') {
-        throw new Error(
+        logger.error(
             `[VALIDATION ERROR] Repository is not defined or it is not a string. Repository: ${repository}`,
         );
+        process.exit(1);
     }
 }
 

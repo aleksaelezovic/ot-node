@@ -236,9 +236,8 @@ async function getAssertionsInBatch(
 ) {
     // Validation
     if (!batchKeys || !Array.isArray(batchKeys)) {
-        throw new Error(
-            `Batch keys is not defined or it is not an array. Batch keys: ${batchKeys}`,
-        );
+        logger.error(`Batch keys is not defined or it is not an array. Batch keys: ${batchKeys}`);
+        process.exit(1);
     }
     validateBatchData(batchData);
     validateTripleStoreRepositories(tripleStoreRepositories);

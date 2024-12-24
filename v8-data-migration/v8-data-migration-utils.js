@@ -1,6 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { NODERC_CONFIG_PATH, MIGRATION_PROGRESS_FILE, DEFAULT_CONFIG_PATH } from './constants.js';
+import {
+    NODERC_CONFIG_PATH,
+    MIGRATION_PROGRESS_FILE,
+    DEFAULT_CONFIG_PATH,
+    MIGRATION_DIR,
+} from './constants.js';
 import { validateConfig } from './validation.js';
 import logger from './logger.js';
 
@@ -32,18 +37,21 @@ export function ensureDirectoryExists(dirPath) {
 }
 
 export function ensureMigrationProgressFileExists() {
-    if (!fs.existsSync(MIGRATION_PROGRESS_FILE)) {
-        fs.writeFileSync(MIGRATION_PROGRESS_FILE, '');
-        logger.info(`Created migration progress file: ${MIGRATION_PROGRESS_FILE}`);
-        if (!fs.existsSync(MIGRATION_PROGRESS_FILE)) {
+    ensureDirectoryExists(MIGRATION_DIR);
+    const migrationProgressFilePath = path.join(MIGRATION_DIR, MIGRATION_PROGRESS_FILE);
+
+    if (!fs.existsSync(migrationProgressFilePath)) {
+        fs.writeFileSync(migrationProgressFilePath, '');
+        logger.info(`Created migration progress file: ${migrationProgressFilePath}`);
+        if (!fs.existsSync(migrationProgressFilePath)) {
             throw new Error(
-                `Something went wrong. Progress file: ${MIGRATION_PROGRESS_FILE} does not exist after creation.`,
+                `Something went wrong. Progress file: ${migrationProgressFilePath} does not exist after creation.`,
             );
         }
     } else {
-        logger.info(`Migration progress file already exists: ${MIGRATION_PROGRESS_FILE}.`);
+        logger.info(`Migration progress file already exists: ${migrationProgressFilePath}.`);
         logger.info('Checking if migration is already successful...');
-        const fileContent = fs.readFileSync(MIGRATION_PROGRESS_FILE, 'utf8');
+        const fileContent = fs.readFileSync(migrationProgressFilePath, 'utf8');
         if (fileContent === 'MIGRATED') {
             logger.info('Migration is already successful. Exiting...');
             process.exit(0);
@@ -52,8 +60,11 @@ export function ensureMigrationProgressFileExists() {
 }
 
 export function markMigrationAsSuccessfull() {
+    // Construct the full path to the migration progress file
+    const migrationProgressFilePath = path.join(MIGRATION_DIR, MIGRATION_PROGRESS_FILE);
+
     // open file
-    const file = fs.openSync(MIGRATION_PROGRESS_FILE, 'w');
+    const file = fs.openSync(migrationProgressFilePath, 'w');
 
     // write MIGRATED
     fs.writeSync(file, 'MIGRATED');

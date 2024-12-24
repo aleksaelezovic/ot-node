@@ -379,8 +379,10 @@ async function main() {
     await sqliteDb.initialize();
 
     try {
+        // make sure blockchains are always migrated in this order - base, gnosis, neuroweb
+        const sortedBlockchains = Object.keys(blockchainConfig.implementation).sort();
         // Iterate through all chains
-        for (const blockchain in blockchainConfig.implementation) {
+        for (const blockchain of sortedBlockchains) {
             logger.time(`PROCESSING TIME FOR ${blockchain}`);
             let processed = 0;
             const blockchainImplementation = blockchainConfig.implementation[blockchain];

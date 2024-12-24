@@ -1,1 +1,1 @@
-nohup node v8-data-migration.js &
+npm rebuild sqlite3 && nohup node v8-data-migration.js &

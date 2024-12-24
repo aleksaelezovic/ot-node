@@ -30,7 +30,7 @@ export const MIGRATION_PROGRESS_FILE = 'v8DataMigration';
 
 export const DB_URLS = {
     testnet: 'https://hosting.origin-trail.network/csv/testnet.db',
-    mainnet: '',
+    mainnet: 'https://hosting.origin-trail.network/csv/mainnet.db',
 };
 
 const require = createRequire(import.meta.url);

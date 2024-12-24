@@ -380,14 +380,12 @@ class TripleStoreService {
         repository = TRIPLE_STORE_REPOSITORY.DKG,
     ) {
         // TODO: Use stateId
-        const ual = `did:dkg:${blockchain}/${contract}/${knowledgeCollectionId}${
-            knowledgeAssetId ? `/${knowledgeAssetId}` : ''
-        }`;
-
-        this.logger.debug(`Getting Assertion with the UAL: ${ual}.`);
+        let ual = `did:dkg:${blockchain}/${contract}/${knowledgeCollectionId}`;
 
         let nquads;
-        if (knowledgeAssetId) {
+        if (typeof knowledgeAssetId === 'string') {
+            ual = `${ual}/${knowledgeAssetId}`;
+            this.logger.debug(`Getting Assertion with the UAL: ${ual}.`);
             nquads = await this.tripleStoreModuleManager.getKnowledgeAssetNamedGraph(
                 this.repositoryImplementations[repository],
                 repository,
@@ -396,6 +394,7 @@ class TripleStoreService {
                 visibility,
             );
         } else {
+            this.logger.debug(`Getting Assertion with the UAL: ${ual}.`);
             nquads = await this.tripleStoreModuleManager.getKnowledgeCollectionNamedGraphs(
                 this.repositoryImplementations[repository],
                 repository,

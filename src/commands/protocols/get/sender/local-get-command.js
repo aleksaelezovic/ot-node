@@ -16,6 +16,7 @@ class LocalGetCommand extends Command {
         this.paranetService = ctx.paranetService;
         this.ualService = ctx.ualService;
         this.repositoryModuleManager = ctx.repositoryModuleManager;
+        this.blockchainModuleManager = ctx.blockchainModuleManager;
 
         this.errorType = ERROR_TYPE.GET.GET_LOCAL_ERROR;
     }
@@ -31,10 +32,10 @@ class LocalGetCommand extends Command {
             includeMetadata,
             contract,
             knowledgeCollectionId,
-            knowledgeAssetId,
             contentType,
             assertionId,
         } = command.data;
+        let { knowledgeAssetId } = command.data;
         await this.operationIdService.updateOperationIdStatus(
             operationId,
             blockchain,
@@ -115,6 +116,13 @@ class LocalGetCommand extends Command {
                     if (result?.length) {
                         break;
                     }
+                }
+                // TODO: Do this in clean way
+                if (!knowledgeAssetId) {
+                    knowledgeAssetId = this.blockchainModuleManager.getKnowledgeAssetsRange(
+                        blockchain,
+                        knowledgeCollectionId,
+                    );
                 }
 
                 if (!result?.length) {

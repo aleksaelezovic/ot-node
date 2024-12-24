@@ -201,7 +201,7 @@ class TripleStoreService {
 
                     throw new Error(
                         `Failed to store Knowledge Collection with the UAL: ${knowledgeCollectionUAL} ` +
-                            `to the Triple Store's ${repository} repository after maximum retries.`,
+                            `to the Triple Store's ${repository} repository after maximum retries. Error ${error}`,
                     );
                 }
             }

@@ -33,7 +33,7 @@ class ValidateAssertionMetadataCommand extends Command {
                 assertion.public ?? assertion,
             );
 
-            if (byteSize !== calculatedAssertionSize) {
+            if (byteSize.toString() !== calculatedAssertionSize.toString()) {
                 await this.handleError(
                     operationId,
                     blockchain,

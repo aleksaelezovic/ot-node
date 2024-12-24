@@ -341,13 +341,12 @@ class OtTripleStore {
 
     async knowledgeCollectionNamedGraphsExist(repository, ual) {
         const query = `
-            ASK {
-                GRAPH ?g {
-                    ?s ?p ?o
-                }
-                FILTER(STRSTARTS(STR(?g), "${ual}/"))
+        ASK {
+            GRAPH <${ual}/1/public> {
+                ?s ?p ?o
             }
-        `;
+        }
+    `;
 
         return this.ask(repository, query);
     }

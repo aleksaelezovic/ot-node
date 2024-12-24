@@ -34,13 +34,12 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
             blockchain,
             contract,
             knowledgeCollectionId,
-            knowledgeAssetId,
             ual,
             includeMetadata,
             isOperationV0,
         } = commandData;
 
-        let { assertionId } = commandData;
+        let { assertionId, knowledgeAssetId } = commandData;
 
         // if (paranetUAL) {
         //     const paranetNodeAccessPolicy = await this.blockchainModuleManager.getNodesAccessPolicy(
@@ -161,6 +160,13 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
                     return result.split('\n').filter((res) => res.length > 0);
                 });
         } else {
+            if (!knowledgeAssetId) {
+                knowledgeAssetId = await this.blockchainModuleManager.getKnowledgeAssetsRange(
+                    blockchain,
+                    contract,
+                    knowledgeCollectionId,
+                );
+            }
             assertionPromise = this.tripleStoreService
                 .getAssertion(
                     blockchain,

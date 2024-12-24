@@ -236,9 +236,8 @@ async function getAssertionsInBatch(
 ) {
     // Validation
     if (!batchKeys || !Array.isArray(batchKeys)) {
-        throw new Error(
-            `Batch keys is not defined or it is not an array. Batch keys: ${batchKeys}`,
-        );
+        logger.error(`Batch keys is not defined or it is not an array. Batch keys: ${batchKeys}`);
+        process.exit(1);
     }
     validateBatchData(batchData);
     validateTripleStoreRepositories(tripleStoreRepositories);
@@ -279,7 +278,8 @@ async function main() {
     // Initialize blockchain config
     const blockchainConfig = config.modules.blockchain;
     if (!blockchainConfig || !blockchainConfig.implementation) {
-        throw new Error('Invalid configuration for blockchain.');
+        logger.error('Invalid configuration for blockchain.');
+        process.exit(1);
     }
 
     logger.info('TRIPLE STORE INITIALIZATION START');
@@ -287,7 +287,8 @@ async function main() {
     // Initialize triple store config
     const tripleStoreConfig = config.modules.tripleStore;
     if (!tripleStoreConfig || !tripleStoreConfig.implementation) {
-        throw new Error('Invalid configuration for triple store.');
+        logger.error('Invalid configuration for triple store.');
+        process.exit(1);
     }
 
     const tripleStoreData = getTripleStoreData(tripleStoreConfig);
@@ -297,11 +298,12 @@ async function main() {
     let tripleStoreRepositories = tripleStoreData.tripleStoreRepositories;
 
     if (Object.keys(tripleStoreRepositories).length !== 3) {
-        throw new Error(
+        logger.error(
             `Triple store repositories are not initialized correctly. Expected 3 repositories, got: ${
                 Object.keys(tripleStoreRepositories).length
             }`,
         );
+        process.exit(1);
     }
 
     // Initialize repositories
@@ -339,24 +341,32 @@ async function main() {
         // Pipe the response stream to the file
         response.data.pipe(writer);
         // Wait for the file to finish downloading
-        await new Promise((resolve, reject) => {
-            let downloadComplete = false;
+        try {
+            await new Promise((resolve, reject) => {
+                let downloadComplete = false;
 
-            response.data.on('end', () => {
-                downloadComplete = true;
-            });
+                response.data.on('end', () => {
+                    downloadComplete = true;
+                });
 
-            writer.on('finish', resolve);
-            writer.on('error', (err) => reject(new Error(`Write stream error: ${err.message}`)));
-            response.data.on('error', (err) =>
-                reject(new Error(`Download stream error: ${err.message}`)),
-            );
-            response.data.on('close', () => {
-                if (!downloadComplete) {
-                    reject(new Error('Download stream closed before completing'));
-                }
+                writer.on('finish', resolve);
+                writer.on('error', (err) =>
+                    reject(new Error(`Write stream error: ${err.message}`)),
+                );
+                response.data.on('error', (err) =>
+                    reject(new Error(`Download stream error: ${err.message}`)),
+                );
+                response.data.on('close', () => {
+                    if (!downloadComplete) {
+                        reject(new Error('Download stream closed before completing'));
+                    }
+                });
             });
-        });
+        } catch (error) {
+            logger.error(`Critical error during download: ${error.message}`);
+            logger.error('Terminating process to prevent data corruption');
+            process.exit(1);
+        }
         logger.timeEnd(`Database file downloading time`);
 
         if (!fs.existsSync(dbFilePath)) {
@@ -369,8 +379,10 @@ async function main() {
     await sqliteDb.initialize();
 
     try {
+        // make sure blockchains are always migrated in this order - base, gnosis, neuroweb
+        const sortedBlockchains = Object.keys(blockchainConfig.implementation).sort();
         // Iterate through all chains
-        for (const blockchain in blockchainConfig.implementation) {
+        for (const blockchain of sortedBlockchains) {
             logger.time(`PROCESSING TIME FOR ${blockchain}`);
             let processed = 0;
             const blockchainImplementation = blockchainConfig.implementation[blockchain];
@@ -383,7 +395,8 @@ async function main() {
                 : defaultConfig[process.env.NODE_ENV].modules.blockchain.implementation[blockchain]
                       .config.rpcEndpoints;
             if (!Array.isArray(rpcEndpoints) || rpcEndpoints.length === 0) {
-                throw new Error(`RPC endpoints are not defined for blockchain ${blockchain}.`);
+                logger.error(`RPC endpoints are not defined for blockchain ${blockchain}.`);
+                process.exit(1);
             }
 
             let blockchainName;
@@ -397,24 +410,25 @@ async function main() {
             }
 
             if (!blockchainName) {
-                throw new Error(
+                logger.error(
                     `Blockchain ${blockchain} not found. Make sure you have the correct blockchain ID and correct NODE_ENV in .env file.`,
                 );
+                process.exit(1);
             }
 
             const tableExists = await sqliteDb.getTableExists(blockchainName);
 
             if (!tableExists) {
-                throw new Error(
-                    `Required table "${blockchainName}" does not exist in the database`,
-                );
+                logger.error(`Required table "${blockchainName}" does not exist in the database`);
+                process.exit(1);
             }
 
             const highestTokenId = await sqliteDb.getHighestTokenId(blockchainName);
             if (!highestTokenId) {
-                throw new Error(
+                logger.error(
                     `Something went wrong. Could not fetch highest tokenId for ${blockchainName}.`,
                 );
+                process.exit(1);
             }
             logger.info(`Total amount of tokenIds: ${highestTokenId}`);
 
@@ -482,6 +496,9 @@ async function main() {
                             100
                         ).toFixed(2)}%. Total processed: ${processed}/${tokenIdsToProcessCount}`,
                     );
+
+                    // Pause for 500ms to deload the triple store
+                    await setTimeout(500);
                 } catch (error) {
                     logger.error(`Error processing batch: ${error}. Pausing for 5 seconds...`);
                     await setTimeout(5000);

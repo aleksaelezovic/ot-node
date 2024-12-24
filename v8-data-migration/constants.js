@@ -19,14 +19,18 @@ export const VISIBILITY = {
     PRIVATE: 'private',
 };
 export const BATCH_SIZE = 50;
+
 export const DEFAULT_CONFIG_PATH = '/root/ot-node/current/config/config.json';
 export const NODERC_CONFIG_PATH = '/root/ot-node/.origintrail_noderc';
 export const DATA_MIGRATION_DIR = '/root/ot-node/data/data-migration';
+export const LOG_DIR = '/root/ot-node/data/data-migration/logs';
 export const ENV_PATH = '/root/ot-node/current/.env';
-export const MIGRATION_PROGRESS_FILE = '/root/ot-node/data/migrations/v8DataMigration';
+export const MIGRATION_DIR = '/root/ot-node/data/migrations/';
+export const MIGRATION_PROGRESS_FILE = 'v8DataMigration';
+
 export const DB_URLS = {
     testnet: 'https://hosting.origin-trail.network/csv/testnet.db',
-    mainnet: '',
+    mainnet: 'https://hosting.origin-trail.network/csv/mainnet.db',
 };
 
 const require = createRequire(import.meta.url);

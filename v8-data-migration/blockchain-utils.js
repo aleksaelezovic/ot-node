@@ -25,9 +25,10 @@ function maskRpcUrl(url) {
 export async function initializeRpc(rpcEndpoint) {
     // Validation
     if (!rpcEndpoint || typeof rpcEndpoint !== 'string') {
-        throw new Error(
+        logger.error(
             `RPC endpoint is not defined or it is not a string. RPC endpoint: ${rpcEndpoint}`,
         );
+        process.exit(1);
     }
     // initialize all possible providers
     const Provider = ethers.providers.JsonRpcProvider;
@@ -39,7 +40,8 @@ export async function initializeRpc(rpcEndpoint) {
         logger.info(`Connected to the blockchain RPC: ${maskRpcUrl(rpcEndpoint)}.`);
         return provider;
     } catch (e) {
-        throw new Error(`Unable to connect to the blockchain RPC: ${maskRpcUrl(rpcEndpoint)}.`);
+        logger.error(`Unable to connect to the blockchain RPC: ${maskRpcUrl(rpcEndpoint)}.`);
+        process.exit(1);
     }
 }
 

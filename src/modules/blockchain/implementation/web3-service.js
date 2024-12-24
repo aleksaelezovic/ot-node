@@ -932,6 +932,37 @@ class Web3Service {
         return Number(knowledgeCollectionSize);
     }
 
+    async getKnowledgeAssetsRange(assetStorageContractAddress, knowledgeCollectionId) {
+        const assetStorageContractInstance =
+            this.assetStorageContracts[assetStorageContractAddress.toString().toLowerCase()];
+        if (!assetStorageContractInstance)
+            throw new Error('Unknown asset storage contract address');
+        const knowledgeAssetsRange = await this.callContractFunction(
+            assetStorageContractInstance,
+            'getKnowledgeAssetsRange',
+            [knowledgeCollectionId],
+        );
+        return {
+            startTokenId: Number(
+                knowledgeAssetsRange[0]
+                    .sub(BigNumber.from(knowledgeCollectionId - 1).mul('0x0f4240'))
+                    .toString(),
+            ),
+            endTokenId: Number(
+                knowledgeAssetsRange[1]
+                    .sub(BigNumber.from(knowledgeCollectionId - 1).mul('0x0f4240'))
+                    .toString(),
+            ),
+            burned: knowledgeAssetsRange[2].map((burned) =>
+                Number(
+                    burned
+                        .sub(BigNumber.from(knowledgeCollectionId - 1).mul('0x0f4240'))
+                        .toString(),
+                ),
+            ),
+        };
+    }
+
     async getMinimumStake() {
         const minimumStake = await this.callContractFunction(
             this.contracts.ParametersStorage,

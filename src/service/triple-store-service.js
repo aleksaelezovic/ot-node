@@ -391,6 +391,7 @@ class TripleStoreService {
                 repository,
                 // TODO: Add state with implemented update
                 `${ual}`,
+                knowledgeAssetId,
                 visibility,
             );
         } else {
@@ -399,6 +400,7 @@ class TripleStoreService {
                 this.repositoryImplementations[repository],
                 repository,
                 ual,
+                knowledgeAssetId,
                 visibility,
             );
         }

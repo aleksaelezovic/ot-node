@@ -1,3 +1,4 @@
+import { kcTools } from 'assertion-tools';
 import ProtocolRequestCommand from '../../../common/protocol-request-command.js';
 import {
     NETWORK_MESSAGE_TIMEOUT_MILLS,
@@ -5,6 +6,7 @@ import {
     OPERATION_REQUEST_STATUS,
     OPERATION_STATUS,
     OPERATION_ID_STATUS,
+    PRIVATE_HASH_SUBJECT_PREFIX,
 } from '../../../../../constants/constants.js';
 
 class GetRequestCommand extends ProtocolRequestCommand {
@@ -69,16 +71,37 @@ class GetRequestCommand extends ProtocolRequestCommand {
         const { blockchain, contract, knowledgeCollectionId, knowledgeAssetId } = command.data;
         if (responseData?.assertion?.public) {
             // Only whole collection can be validated not particular KA
+
             if (!knowledgeAssetId) {
+                const publicAssertion = responseData?.assertion?.public;
+
+                const filteredPublic = [];
+                const privateHashTriples = [];
+                publicAssertion.forEach((triple) => {
+                    if (triple.startsWith(`<${PRIVATE_HASH_SUBJECT_PREFIX}`)) {
+                        privateHashTriples.push(triple);
+                    } else {
+                        filteredPublic.push(triple);
+                    }
+                });
+
+                const publicKnowledgeAssetsTriplesGrouped = kcTools.groupNquadsBySubject(
+                    filteredPublic,
+                    true,
+                );
+                publicKnowledgeAssetsTriplesGrouped.push(
+                    ...kcTools.groupNquadsBySubject(privateHashTriples, true),
+                );
                 try {
                     await this.validationService.validateDatasetOnBlockchain(
-                        responseData.assertion.public,
+                        publicKnowledgeAssetsTriplesGrouped.map((t) => t.sort()).flat(),
                         blockchain,
                         contract,
                         knowledgeCollectionId,
                     );
 
                     // This is added as support when get starts supporting private for curated paranet
+                    // TODO: This needs to be fixed when paranets are introduced
                     if (responseData.assertion?.private?.length)
                         await this.validationService.validatePrivateMerkleRoot(
                             responseData.assertion.public,

@@ -283,7 +283,8 @@ export async function _executeQuery(
     validateQuery(query);
 
     if (!mediaType) {
-        throw new Error(`[VALIDATION ERROR] Media type is not defined. Media type: ${mediaType}`);
+        logger.error(`[VALIDATION ERROR] Media type is not defined. Media type: ${mediaType}`);
+        process.exit(1);
     }
 
     const response = await axios.post(
@@ -396,9 +397,10 @@ export async function getAssertionFromV6TripleStore(
         !ualAssertionIdData.assertionId ||
         !ualAssertionIdData.ual
     ) {
-        throw new Error(
+        logger.error(
             `[VALIDATION ERROR] Ual assertion ID data is not properly defined or it is not an object. Ual assertion ID data: ${ualAssertionIdData}`,
         );
+        process.exit(1);
     }
 
     const { assertionId, ual } = ualAssertionIdData;
@@ -423,7 +425,7 @@ export async function getAssertionFromV6TripleStore(
                 // Extract the private assertionId from the publicAssertion if it exists
                 const privateAssertionId = extractPrivateAssertionId(publicAssertion);
                 if (!privateAssertionId) {
-                    logger.error(
+                    logger.warn(
                         `There was a problem while extracting the private assertionId from public assertion: ${publicAssertion}. Extracted privateAssertionId: ${privateAssertionId}`,
                     );
                     success = false;

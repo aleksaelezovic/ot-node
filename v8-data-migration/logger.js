@@ -1,10 +1,16 @@
 import pino from 'pino';
 import fs from 'fs';
+import { LOG_DIR } from './constants.js';
 
 // Ensure logs directory exists
-const LOG_DIR = './logs';
 if (!fs.existsSync(LOG_DIR)) {
-    fs.mkdirSync(LOG_DIR);
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+
+    if (!fs.existsSync(LOG_DIR)) {
+        throw new Error(
+            `Something went wrong. Directory: ${LOG_DIR} does not exist after creation.`,
+        );
+    }
 }
 
 const timers = new Map();

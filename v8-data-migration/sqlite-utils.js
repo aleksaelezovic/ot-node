@@ -22,7 +22,8 @@ export class SqliteDatabase {
         });
 
         if (!this.db) {
-            throw new Error('Failed to initialize SQLite database');
+            logger.error('Failed to initialize SQLite database');
+            process.exit(1);
         }
     }
 
@@ -124,13 +125,15 @@ export class SqliteDatabase {
 
     _validateConnection() {
         if (!this.db) {
-            throw new Error('Database not initialized. Call initialize() first.');
+            logger.error('Database not initialized. Call initialize() first.');
+            process.exit(1);
         }
     }
 
     _validateBlockchainName(blockchainName) {
         if (!blockchainName) {
-            throw new Error('Blockchain name is required');
+            logger.error('Blockchain name is required');
+            process.exit(1);
         }
     }
 }

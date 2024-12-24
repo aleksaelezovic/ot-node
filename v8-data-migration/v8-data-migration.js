@@ -495,6 +495,9 @@ async function main() {
                             100
                         ).toFixed(2)}%. Total processed: ${processed}/${tokenIdsToProcessCount}`,
                     );
+
+                    // Pause for 500ms to deload the triple store
+                    await setTimeout(500);
                 } catch (error) {
                     logger.error(`Error processing batch: ${error}. Pausing for 5 seconds...`);
                     await setTimeout(5000);

@@ -181,8 +181,9 @@ class BlockchainModuleManager extends BaseModuleManager {
         ]);
     }
 
-    async getKnowledgeAssetsRange(blockchain, knowledgeCollectionId) {
+    async getKnowledgeAssetsRange(blockchain, assetStorageContractAddress, knowledgeCollectionId) {
         return this.callImplementationFunction(blockchain, 'getKnowledgeAssetsRange', [
+            assetStorageContractAddress,
             knowledgeCollectionId,
         ]);
     }

@@ -291,7 +291,7 @@ class OtTripleStore {
         await this.queryVoid(repository, query);
     }
 
-    async getKnowledgeCollectionNamedGraphs(repository, ual, tokenIds, visibility) {
+    async getKnowledgeCollectionNamedGraphs(repository, tokenIds, ual, visibility) {
         const namedGraphs = Array.from(
             { length: tokenIds.endTokenId - tokenIds.startTokenId + 1 },
             (_, i) => tokenIds.startTokenId + i,
@@ -311,7 +311,7 @@ class OtTripleStore {
                 }
                 VALUES ?g {
                     ${namedGraphs
-                        .map((graph) => `${graph}/${TRIPLES_VISIBILITY.PUBLIC}`)
+                        .map((graph) => `<${graph}/${TRIPLES_VISIBILITY.PUBLIC}>`)
                         .join('\n')}
                 }
               }`;
@@ -329,7 +329,7 @@ class OtTripleStore {
                 }
                 VALUES ?g {
                     ${namedGraphs
-                        .map((graph) => `${graph}/${TRIPLES_VISIBILITY.PRIVATE}`)
+                        .map((graph) => `<${graph}/${TRIPLES_VISIBILITY.PRIVATE}>`)
                         .join('\n')}
                 }
               }`;

@@ -943,9 +943,23 @@ class Web3Service {
             [knowledgeCollectionId],
         );
         return {
-            startTokenId: knowledgeAssetsRange[0],
-            endTokenId: knowledgeAssetsRange[1],
-            burned: knowledgeAssetsRange[2],
+            startTokenId: Number(
+                knowledgeAssetsRange[0]
+                    .sub(BigNumber.from(knowledgeCollectionId - 1).mul('0x0f4240'))
+                    .toString(),
+            ),
+            endTokenId: Number(
+                knowledgeAssetsRange[1]
+                    .sub(BigNumber.from(knowledgeCollectionId - 1).mul('0x0f4240'))
+                    .toString(),
+            ),
+            burned: knowledgeAssetsRange[2].map((burned) =>
+                Number(
+                    burned
+                        .sub(BigNumber.from(knowledgeCollectionId - 1).mul('0x0f4240'))
+                        .toString(),
+                ),
+            ),
         };
     }
 

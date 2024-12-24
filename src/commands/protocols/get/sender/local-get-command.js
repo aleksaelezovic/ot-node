@@ -117,13 +117,6 @@ class LocalGetCommand extends Command {
                         break;
                     }
                 }
-                // TODO: Do this in clean way
-                if (!knowledgeAssetId) {
-                    knowledgeAssetId = this.blockchainModuleManager.getKnowledgeAssetsRange(
-                        blockchain,
-                        knowledgeCollectionId,
-                    );
-                }
 
                 if (!result?.length) {
                     result = await this.tripleStoreService.getAssertion(
@@ -145,6 +138,14 @@ class LocalGetCommand extends Command {
                     : result;
             })();
         } else {
+            // TODO: Do this in clean way
+            if (!knowledgeAssetId) {
+                knowledgeAssetId = await this.blockchainModuleManager.getKnowledgeAssetsRange(
+                    blockchain,
+                    contract,
+                    knowledgeCollectionId,
+                );
+            }
             assertionPromise = this.tripleStoreService
                 .getAssertion(
                     blockchain,

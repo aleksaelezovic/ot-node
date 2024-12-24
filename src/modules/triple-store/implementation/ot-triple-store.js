@@ -291,52 +291,48 @@ class OtTripleStore {
         await this.queryVoid(repository, query);
     }
 
-    async getKnowledgeCollectionNamedGraphs(repository, ual, visibility) {
+    async getKnowledgeCollectionNamedGraphs(repository, tokenIds, ual, visibility) {
+        const namedGraphs = Array.from(
+            { length: tokenIds.endTokenId - tokenIds.startTokenId + 1 },
+            (_, i) => tokenIds.startTokenId + i,
+        )
+            .filter((id) => !tokenIds.burned.includes(id))
+            .map((id) => `${ual}/${id}`);
         const assertion = {};
         if (visibility === TRIPLES_VISIBILITY.PUBLIC || visibility === TRIPLES_VISIBILITY.ALL) {
             const query = `
             PREFIX schema: <http://schema.org/>
             CONSTRUCT {
                 ?s ?p ?o .
-            }
-            WHERE {
-                {
-                    SELECT ?s ?p ?o ?g
-                    WHERE {
-                        GRAPH ?g {
-                            ?s ?p ?o .
-                        }
-                        FILTER (
-                            STRSTARTS(STR(?g), "${ual}")
-                            && STRENDS(STR(?g), "${TRIPLES_VISIBILITY.PUBLIC}")
-                        )
-                    }
-                    ORDER BY ?g ?s ?p ?o
+              }
+              WHERE {
+                GRAPH ?g {
+                  ?s ?p ?o .
                 }
-            }`;
+                VALUES ?g {
+                    ${namedGraphs
+                        .map((graph) => `<${graph}/${TRIPLES_VISIBILITY.PUBLIC}>`)
+                        .join('\n')}
+                }
+              }`;
             assertion.public = await this.construct(repository, query);
         }
         if (visibility === TRIPLES_VISIBILITY.PRIVATE || visibility === TRIPLES_VISIBILITY.ALL) {
             const query = `
-                PREFIX schema: <http://schema.org/>
-                CONSTRUCT {
-                    ?s ?p ?o .
+            PREFIX schema: <http://schema.org/>
+            CONSTRUCT {
+                ?s ?p ?o .
+              }
+              WHERE {
+                GRAPH ?g {
+                  ?s ?p ?o .
                 }
-                WHERE {
-                    {
-                        SELECT ?s ?p ?o ?g
-                        WHERE {
-                            GRAPH ?g {
-                                ?s ?p ?o .
-                            }
-                            FILTER (
-                                STRSTARTS(STR(?g), "${ual}")
-                                && STRENDS(STR(?g), "${TRIPLES_VISIBILITY.PRIVATE}")
-                            )
-                        }
-                        ORDER BY ?g ?s ?p ?o
-                    }
-                }`;
+                VALUES ?g {
+                    ${namedGraphs
+                        .map((graph) => `<${graph}/${TRIPLES_VISIBILITY.PRIVATE}>`)
+                        .join('\n')}
+                }
+              }`;
             assertion.private = await this.construct(repository, query);
         }
 

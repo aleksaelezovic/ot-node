@@ -137,11 +137,18 @@ class TripleStoreModuleManager extends BaseModuleManager {
         }
     }
 
-    async getKnowledgeCollectionNamedGraphs(implementationName, repository, ual, visibility, sort) {
+    async getKnowledgeCollectionNamedGraphs(
+        implementationName,
+        repository,
+        ual,
+        tokenIds,
+        visibility,
+        sort,
+    ) {
         if (this.getImplementation(implementationName)) {
             return this.getImplementation(
                 implementationName,
-            ).module.getKnowledgeCollectionNamedGraphs(repository, ual, visibility, sort);
+            ).module.getKnowledgeCollectionNamedGraphs(repository, tokenIds, ual, visibility, sort);
         }
     }
 

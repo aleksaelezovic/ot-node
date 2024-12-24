@@ -5,147 +5,236 @@ class TripleStoreModuleManager extends BaseModuleManager {
         return this.getImplementation().module.initializeParanetRepository(repository);
     }
 
-    async insertAssetAssertionMetadata(implementationName, repository, assetNquads) {
+    async insetAssertionInNamedGraph(implementationName, repository, namedGraph, nquads) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.insertAssetAssertionMetadata(
+            return this.getImplementation(implementationName).module.insetAssertionInNamedGraph(
                 repository,
-                assetNquads,
+                namedGraph,
+                nquads,
             );
         }
     }
 
-    async updateAssetNonAssertionMetadata(implementationName, repository, ual, assetNquads) {
+    async deleteUniqueKnowledgeCollectionTriplesFromUnifiedGraph(
+        implementationName,
+        repository,
+        namedGraph,
+        ual,
+    ) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.updateAssetMetadata(
+            return this.getImplementation(
+                implementationName,
+            ).module.deleteUniqueKnowledgeCollectionTriplesFromUnifiedGraph(
                 repository,
+                namedGraph,
                 ual,
-                assetNquads,
             );
         }
     }
 
-    async deleteAssetMetadata(implementationName, repository, ual) {
+    async getKnowledgeCollectionFromUnifiedGraph(
+        implementationName,
+        repository,
+        namedGraph,
+        ual,
+        sort,
+    ) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.deleteAssetMetadata(
+            return this.getImplementation(
+                implementationName,
+            ).module.getKnowledgeCollectionFromUnifiedGraph(repository, namedGraph, ual, sort);
+        }
+    }
+
+    async getKnowledgeCollectionPublicFromUnifiedGraph(
+        implementationName,
+        repository,
+        namedGraph,
+        ual,
+        sort,
+    ) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(
+                implementationName,
+            ).module.getKnowledgeCollectionPublicFromUnifiedGraph(
                 repository,
+                namedGraph,
                 ual,
+                sort,
             );
         }
     }
 
-    async assetExists(implementationName, repository, ual) {
+    async knowledgeCollectionExistsInUnifiedGraph(implementationName, repository, namedGraph, ual) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.assetExists(repository, ual);
+            return this.getImplementation(
+                implementationName,
+            ).module.knowledgeCollectionExistsInUnifiedGraph(repository, namedGraph, ual);
         }
     }
 
-    async insertAssetAssertionLink(implementationName, repository, ual, assertionId) {
+    async deleteUniqueKnowledgeAssetTriplesFromUnifiedGraph(
+        implementationName,
+        repository,
+        namedGraph,
+        ual,
+    ) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.insertAssetAssertionLink(
+            return this.getImplementation(
+                implementationName,
+            ).module.deleteUniqueKnowledgeAssetTriplesFromUnifiedGraph(repository, namedGraph, ual);
+        }
+    }
+
+    async getKnowledgeAssetFromUnifiedGraph(implementationName, repository, namedGraph, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(
+                implementationName,
+            ).module.getKnowledgeAssetFromUnifiedGraph(repository, namedGraph, ual);
+        }
+    }
+
+    async getKnowledgeAssetPublicFromUnifiedGraph(implementationName, repository, namedGraph, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(
+                implementationName,
+            ).module.getKnowledgeAssetPublicFromUnifiedGraph(repository, namedGraph, ual);
+        }
+    }
+
+    async knowledgeAssetExistsInUnifiedGraph(implementationName, repository, namedGraph, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(
+                implementationName,
+            ).module.knowledgeAssetExistsInUnifiedGraph(repository, namedGraph, ual);
+        }
+    }
+
+    async createKnowledgeCollectionNamedGraphs(
+        implementationName,
+        repository,
+        uals,
+        assetsNQuads,
+        visibility,
+    ) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(
+                implementationName,
+            ).module.createKnowledgeCollectionNamedGraphs(
                 repository,
-                ual,
-                assertionId,
+                uals,
+                assetsNQuads,
+                visibility,
             );
         }
     }
 
-    async deleteAssetAssertionLink(implementationName, repository, ual, assertionId) {
+    async deleteKnowledgeCollectionNamedGraphs(implementationName, repository, uals) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.deleteAssetAssertionLink(
-                repository,
-                ual,
-                assertionId,
-            );
+            return this.getImplementation(
+                implementationName,
+            ).module.deleteKnowledgeCollectionNamedGraphs(repository, uals);
         }
     }
 
-    async updateAssetAssertionLink(
+    async getKnowledgeCollectionNamedGraphs(
         implementationName,
         repository,
         ual,
-        oldAssertionId,
-        newAssertionId,
+        tokenIds,
+        visibility,
+        sort,
     ) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.updateAssetAssertionLink(
-                repository,
-                ual,
-                oldAssertionId,
-                newAssertionId,
-            );
+            return this.getImplementation(
+                implementationName,
+            ).module.getKnowledgeCollectionNamedGraphs(repository, tokenIds, ual, visibility, sort);
         }
     }
 
-    async getAssetAssertionLinks(implementationName, repository, ual) {
+    async knowledgeCollectionNamedGraphsExist(implementationName, repository, ual) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.getAssetAssertionLinks(
-                repository,
-                ual,
-            );
+            return this.getImplementation(
+                implementationName,
+            ).module.knowledgeCollectionNamedGraphsExist(repository, ual);
         }
     }
 
-    async assetAssertionLinkExists(implementationName, repository, ual, assertionId) {
+    async deleteKnowledgeAssetNamedGraph(implementationName, repository, ual) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.assetAssertionLinkExists(
-                repository,
-                ual,
-                assertionId,
-            );
-        }
-    }
-
-    async insertAssertion(implementationName, repository, assertionId, assertionNquads) {
-        if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.insertAssertion(
-                repository,
-                assertionId,
-                assertionNquads,
-            );
-        }
-    }
-
-    async assertionExists(implementationName, repository, uri) {
-        if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.assertionExists(
-                repository,
-                uri,
-            );
-        }
-    }
-
-    async countAssetsWithAssertionId(implementationName, repository, assertionId) {
-        if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.countAssetsWithAssertionId(
-                repository,
-                assertionId,
-            );
-        }
-    }
-
-    async getAssetAssertionIds(implementationName, repository, ual) {
-        if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.getAssetAssertionIds(
+            return this.getImplementation(implementationName).module.deleteKnowledgeAssetNamedGraph(
                 repository,
                 ual,
             );
         }
     }
 
-    async getAssertion(implementationName, repository, assertionId) {
+    async getKnowledgeAssetNamedGraph(implementationName, repository, ual, visibility) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.getAssertion(
+            return this.getImplementation(implementationName).module.getKnowledgeAssetNamedGraph(
                 repository,
-                assertionId,
+                ual,
+                visibility,
             );
         }
     }
 
-    async deleteAssertion(implementationName, repository, assertionId) {
+    async knowledgeAssetNamedGraphExists(implementationName, repository, name) {
         if (this.getImplementation(implementationName)) {
-            return this.getImplementation(implementationName).module.deleteAssertion(
+            return this.getImplementation(implementationName).module.knowledgeAssetNamedGraphExists(
                 repository,
-                assertionId,
+                name,
+            );
+        }
+    }
+
+    async insertKnowledgeCollectionMetadata(implementationName, repository, metadataNQuads) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(
+                implementationName,
+            ).module.insertKnowledgeCollectionMetadata(repository, metadataNQuads);
+        }
+    }
+
+    async deleteKnowledgeCollectionMetadata(implementationName, repository, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(
+                implementationName,
+            ).module.deleteKnowledgeCollectionMetadata(repository, ual);
+        }
+    }
+
+    async getKnowledgeCollectionMetadata(implementationName, repository, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(implementationName).module.getKnowledgeCollectionMetadata(
+                repository,
+                ual,
+            );
+        }
+    }
+
+    async getKnowledgeAssetMetadata(implementationName, repository, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(implementationName).module.getKnowledgeAssetMetadata(
+                repository,
+                ual,
+            );
+        }
+    }
+
+    async knowledgeCollectionMetadataExists(implementationName, repository, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(
+                implementationName,
+            ).module.knowledgeCollectionMetadataExists(repository, ual);
+        }
+    }
+
+    async getLatestAssertionId(implementationName, repository, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(implementationName).module.getLatestAssertionId(
+                repository,
+                ual,
             );
         }
     }
@@ -174,8 +263,38 @@ class TripleStoreModuleManager extends BaseModuleManager {
         }
     }
 
+    async findAllNamedGraphsByUAL(implementationName, repository, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(implementationName).module.findAllNamedGraphsByUAL(
+                repository,
+                ual,
+            );
+        }
+    }
+
+    async findAllSubjectsWithGraphNames(implementationName, repository, ual) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(implementationName).module.findAllSubjectsWithGraphNames(
+                implementationName,
+                repository,
+                ual,
+            );
+        }
+    }
+
     getName() {
         return 'tripleStore';
+    }
+
+    // OLD REPOSITORIES SUPPORT
+
+    async getV6Assertion(implementationName, repository, assertionId) {
+        if (this.getImplementation(implementationName)) {
+            return this.getImplementation(implementationName).module.getV6Assertion(
+                repository,
+                assertionId,
+            );
+        }
     }
 }
 

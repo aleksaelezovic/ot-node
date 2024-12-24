@@ -25,7 +25,7 @@ class StoreAssertionCommand extends Command {
             OPERATION_ID_STATUS.PUBLISH_FINALIZATION.PUBLISH_FINALIZATION_STORE_ASSERTION_START,
         );
         try {
-            await this._insertAssertion(assertion, ual);
+            await this._insertAssertion(assertion.public ?? assertion, ual);
         } catch (e) {
             await this.handleError(operationId, blockchain, e.message, this.errorType, true);
             return Command.empty(); // TODO: Should it end here or do a retry?

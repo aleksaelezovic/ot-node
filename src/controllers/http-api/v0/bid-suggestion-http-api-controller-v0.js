@@ -10,7 +10,7 @@ class BidSuggestionController extends BaseController {
 
     async handleRequest(req, res) {
         try {
-            const { blockchain, epochsNumber, assertionSize } = req.body;
+            const { blockchain, epochsNumber, assertionSize } = req.query;
             const promises = [
                 this.blockchainModuleManager.getTimeUntilNextEpoch(blockchain),
                 this.blockchainModuleManager.getEpochLength(blockchain),

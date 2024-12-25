@@ -166,6 +166,7 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
                     );
                 } catch (error) {
                     // Asset created on old content asset storage contract
+                    // TODO: actually it could be other error so we should check that, or add try catch to getKARange function
                     knowledgeAssetId = {
                         startTokenId: 1,
                         endTokenId: 1,

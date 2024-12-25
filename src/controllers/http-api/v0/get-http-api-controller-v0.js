@@ -54,10 +54,12 @@ class GetController extends BaseController {
         let knowledgeCollectionId;
         let knowledgeAssetId;
         try {
-            const { id, paranetUAL, includeMetadata, contentType } = req.body;
+            const { paranetUAL, includeMetadata, contentType } = req.body;
+            let { id } = req.body;
             ({ blockchain, contract, knowledgeCollectionId, knowledgeAssetId } =
                 this.ualService.resolveUAL(id));
-
+            contract = contract.toLowerCase();
+            id = this.ualService.deriveUAL(blockchain, contract, knowledgeAssetId);
             this.logger.info(`Get for ${id} with operation id ${operationId} initiated.`);
 
             // Get assertionId - datasetRoot

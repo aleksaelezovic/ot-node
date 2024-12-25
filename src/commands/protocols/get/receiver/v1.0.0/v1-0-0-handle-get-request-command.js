@@ -110,18 +110,18 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
 
         let assertionPromise;
 
-        if (isOperationV0) {
-            if (!assertionId) {
-                assertionId = await this.tripleStoreService.getLatestAssertionId(
-                    TRIPLE_STORE_REPOSITORIES.PUBLIC_CURRENT,
-                    ual,
-                );
+        if (!assertionId) {
+            assertionId = await this.tripleStoreService.getLatestAssertionId(
+                TRIPLE_STORE_REPOSITORIES.PUBLIC_CURRENT,
+                ual,
+            );
 
-                this.logger.info(
-                    `Found assertion id: ${assertionId}, operation id ${operationId}, ual: ${ual}`,
-                );
-            }
+            this.logger.info(
+                `Found assertion id: ${assertionId}, operation id ${operationId}, ual: ${ual}`,
+            );
+        }
 
+        if (assertionId) {
             // DO NOT RUN THIS IF !assertionId
             assertionPromise = this.tripleStoreService
                 .getV6Assertion(TRIPLE_STORE_REPOSITORIES.PUBLIC_CURRENT, assertionId)
@@ -145,10 +145,7 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
                             blockchain,
                         );
 
-                        return [
-                            ...(fallbackResult.public ?? []),
-                            ...(fallbackResult.private ?? []),
-                        ];
+                        return fallbackResult;
                     }
 
                     this.operationIdService.emitChangeEvent(
@@ -161,11 +158,20 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
                 });
         } else {
             if (!knowledgeAssetId) {
-                knowledgeAssetId = await this.blockchainModuleManager.getKnowledgeAssetsRange(
-                    blockchain,
-                    contract,
-                    knowledgeCollectionId,
-                );
+                try {
+                    knowledgeAssetId = await this.blockchainModuleManager.getKnowledgeAssetsRange(
+                        blockchain,
+                        contract,
+                        knowledgeCollectionId,
+                    );
+                } catch (error) {
+                    // Asset created on old content asset storage contract
+                    knowledgeAssetId = {
+                        startTokenId: 1,
+                        endTokenId: 1,
+                        burned: [],
+                    };
+                }
             }
             assertionPromise = this.tripleStoreService
                 .getAssertion(
@@ -208,7 +214,9 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
         const [assertion, metadata] = await Promise.all(promises);
 
         const responseData = {
-            assertion,
+            assertion: isOperationV0
+                ? [...(assertion.public ?? []), ...(assertion.private ?? [])]
+                : assertion,
             ...(includeMetadata && metadata && { metadata }),
         };
 

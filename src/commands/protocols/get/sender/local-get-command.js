@@ -34,6 +34,7 @@ class LocalGetCommand extends Command {
             knowledgeCollectionId,
             contentType,
             assertionId,
+            isOperationV0,
         } = command.data;
         let { knowledgeAssetId } = command.data;
         await this.operationIdService.updateOperationIdStatus(
@@ -140,11 +141,20 @@ class LocalGetCommand extends Command {
         } else {
             // TODO: Do this in clean way
             if (!knowledgeAssetId) {
-                knowledgeAssetId = await this.blockchainModuleManager.getKnowledgeAssetsRange(
-                    blockchain,
-                    contract,
-                    knowledgeCollectionId,
-                );
+                try {
+                    knowledgeAssetId = await this.blockchainModuleManager.getKnowledgeAssetsRange(
+                        blockchain,
+                        contract,
+                        knowledgeCollectionId,
+                    );
+                } catch (error) {
+                    // Asset created on old content asset storage contract
+                    knowledgeAssetId = {
+                        startTokenId: 1,
+                        endTokenId: 1,
+                        burned: [],
+                    };
+                }
             }
             assertionPromise = this.tripleStoreService
                 .getAssertion(
@@ -188,9 +198,12 @@ class LocalGetCommand extends Command {
         const [assertion, metadata] = await Promise.all(promises);
 
         const responseData = {
-            assertion,
+            assertion: isOperationV0
+                ? [...(assertion?.public ?? []), ...(assertion?.private ?? [])]
+                : assertion,
             ...(includeMetadata && metadata && { metadata }),
         };
+
         if (assertion?.public?.length || assertion?.private?.length || assertion?.length) {
             await this.operationService.markOperationAsCompleted(
                 operationId,

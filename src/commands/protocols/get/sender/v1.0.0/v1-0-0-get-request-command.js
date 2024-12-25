@@ -7,6 +7,7 @@ import {
     OPERATION_STATUS,
     OPERATION_ID_STATUS,
     PRIVATE_HASH_SUBJECT_PREFIX,
+    OLD_CONTENT_STORAGE_MAP,
 } from '../../../../../constants/constants.js';
 
 class GetRequestCommand extends ProtocolRequestCommand {
@@ -68,7 +69,13 @@ class GetRequestCommand extends ProtocolRequestCommand {
     }
 
     async handleAck(command, responseData) {
-        const { blockchain, contract, knowledgeCollectionId, knowledgeAssetId } = command.data;
+        const { blockchain, contract, knowledgeCollectionId, knowledgeAssetId, isOperationV0 } =
+            command.data;
+
+        const isOldContract = Object.values(OLD_CONTENT_STORAGE_MAP).some((ca) =>
+            ca.toLowerCase().includes(contract.toLowerCase()),
+        );
+
         if (responseData?.assertion?.public) {
             // Only whole collection can be validated not particular KA
 
@@ -92,31 +99,47 @@ class GetRequestCommand extends ProtocolRequestCommand {
                 publicKnowledgeAssetsTriplesGrouped.push(
                     ...kcTools.groupNquadsBySubject(privateHashTriples, true),
                 );
-                try {
-                    await this.validationService.validateDatasetOnBlockchain(
-                        publicKnowledgeAssetsTriplesGrouped.map((t) => t.sort()).flat(),
-                        blockchain,
-                        contract,
-                        knowledgeCollectionId,
-                    );
 
-                    // This is added as support when get starts supporting private for curated paranet
-                    // TODO: This needs to be fixed when paranets are introduced
-                    if (responseData.assertion?.private?.length)
-                        await this.validationService.validatePrivateMerkleRoot(
-                            responseData.assertion.public,
-                            responseData.assertion.private,
+                if (!isOldContract) {
+                    try {
+                        await this.validationService.validateDatasetOnBlockchain(
+                            publicKnowledgeAssetsTriplesGrouped.map((t) => t.sort()).flat(),
+                            blockchain,
+                            contract,
+                            knowledgeCollectionId,
                         );
-                } catch (e) {
-                    return this.handleNack(command, {
-                        errorMessage: e.message,
-                    });
+
+                        // This is added as support when get starts supporting private for curated paranet
+                        // TODO: This needs to be fixed when paranets are introduced
+                        if (responseData.assertion?.private?.length)
+                            await this.validationService.validatePrivateMerkleRoot(
+                                responseData.assertion.public,
+                                responseData.assertion.private,
+                            );
+                    } catch (e) {
+                        return this.handleNack(command, {
+                            errorMessage: e.message,
+                        });
+                    }
                 }
             }
+
+            let updatedResponseData = responseData;
+
+            if (isOperationV0) {
+                // TODO: Extract converting assertion into one array from the object into 1 function since its used for v0
+                const assertion = [
+                    ...(responseData.assertion?.public ?? []),
+                    ...(responseData.assertion?.private ?? []),
+                ];
+
+                updatedResponseData = { ...responseData, assertion };
+            }
+
             await this.operationService.processResponse(
                 command,
                 OPERATION_REQUEST_STATUS.COMPLETED,
-                responseData,
+                updatedResponseData,
             );
 
             return ProtocolRequestCommand.empty();

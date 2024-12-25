@@ -487,7 +487,7 @@
                         "enabled": false,
                         "package": "./blockchain/implementation/ot-parachain/ot-parachain-service.js",
                         "config": {
-                            "hubContractAddress": "0x94cb4Ce3C6ce3654b0dA47255a2325322DaD5552",
+                            "hubContractAddress": "0xd7d073b560412c6A7F33dD670d323D01061E5DEb",
                             "rpcEndpoints": [
                                 "https://lofar-testnet.origin-trail.network",
                                 "https://lofar-testnet.origintrail.network"
@@ -500,7 +500,7 @@
                         "package": "./blockchain/implementation/gnosis/gnosis-service.js",
 
                         "config": {
-                            "hubContractAddress": "0xC2d165484ee044aFCD0F693a84Ae57235FD986fA",
+                            "hubContractAddress": "0x2c08AC4B630c009F709521e56Ac385A6af70650f",
                             "gasPriceOracleLink": "https://blockscout.chiadochain.net/api/v1/gas-price-oracle",
                             "rpcEndpoints": ["https://rpc.chiadochain.net"],
                             "operatorFee": 0
@@ -511,7 +511,7 @@
                         "package": "./blockchain/implementation/base/base-service.js",
 
                         "config": {
-                            "hubContractAddress": "0x4A0aC589D7469868ff4EC889aa2c7eE43d30d823",
+                            "hubContractAddress": "0xf21CE8f8b01548D97DCFb36869f1ccB0814a4e05",
                             "rpcEndpoints": ["https://sepolia.base.org"],
                             "operatorFee": 0
                         }
@@ -579,9 +579,9 @@
                                 "gnosis:10200": ["https://rpc.chiadochain.net"]
                             },
                             "hubContractAddress": {
-                                "base:84532": "0x4A0aC589D7469868ff4EC889aa2c7eE43d30d823",
-                                "otp:20430": "0x94cb4Ce3C6ce3654b0dA47255a2325322DaD5552",
-                                "gnosis:10200": "0xC2d165484ee044aFCD0F693a84Ae57235FD986fA"
+                                "base:84532": "0xf21CE8f8b01548D97DCFb36869f1ccB0814a4e05",
+                                "otp:20430": "0xd7d073b560412c6A7F33dD670d323D01061E5DEb",
+                                "gnosis:10200": "0x2c08AC4B630c009F709521e56Ac385A6af70650f"
                             }
                         }
                     }

@@ -53,6 +53,7 @@ class GetValidateAssetCommand extends ValidateAssetCommand {
             blockchain,
         );
         // TODO: Update to validate knowledge asset index
+        // TODO: Use isOldContract as variable and pass it through with command.data since it's used
         if (
             !isOperationV0 &&
             Object.values(OLD_CONTENT_STORAGE_MAP).every(

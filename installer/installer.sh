@@ -49,8 +49,8 @@ notification_box() {
 check_ubuntu_version() {
     UBUNTU_VERSION=$(lsb_release -r -s)
 
-    if [[ "$UBUNTU_VERSION" != "20.04" && "$UBUNTU_VERSION" != "22.04" ]]; then
-        notification_box "Error: OriginTrail node installer currently requires Ubuntu 20.04 LTS or 22.04 LTS versions in order to execute successfully. You are installing on Ubuntu $UBUNTU_VERSION."
+    if [[ "$UBUNTU_VERSION" != "20.04" && "$UBUNTU_VERSION" != "22.04" && "$UBUNTU_VERSION" != "24.04" ]]; then
+        notification_box "Error: OriginTrail node installer currently requires Ubuntu 20.04 LTS, 22.04 LTS or 24.04 LTS versions in order to execute successfully. You are installing on Ubuntu $UBUNTU_VERSION."
         echo -e "${BRED}Please make sure that you get familiar with the requirements before setting up your OriginTrail node! Documentation: docs.origintrail.io${NC}"
         exit 1
     fi
@@ -83,8 +83,8 @@ install_aliases() {
 
 install_directory() {
     ARCHIVE_REPOSITORY_URL="github.com/OriginTrail/ot-node/archive"
-    BRANCH="v6/release/mainnet"
-    BRANCH_DIR="/root/ot-node-6-release-mainnet"
+    BRANCH="v8/release/testnet"
+    BRANCH_DIR="/root/ot-node-8-release-testnet"
 
     perform_step wget https://$ARCHIVE_REPOSITORY_URL/$BRANCH.zip "Downloading node files"
     perform_step unzip *.zip "Unzipping node files"
@@ -98,14 +98,10 @@ install_directory() {
     perform_step ln -sfn $OTNODE_DIR/$OTNODE_VERSION $OTNODE_DIR/current "Creating symlink from $OTNODE_DIR/$OTNODE_VERSION to $OTNODE_DIR/current"
 }
 
-install_firewall() {
-    ufw allow 22/tcp && ufw allow 8900 && ufw allow 9000
-    yes | ufw enable
-}
 
 install_prereqs() {
     export DEBIAN_FRONTEND=noninteractive
-    NODEJS_VER="16"
+    NODEJS_VER="20"
 
     perform_step install_aliases "Updating .bashrc file with OriginTrail node aliases" > /dev/null 2>&1
     perform_step rm -rf /var/lib/dpkg/lock-frontend "Removing any frontend locks" > /dev/null 2>&1
@@ -115,24 +111,23 @@ install_prereqs() {
     perform_step apt install default-jre -y "Installing default-jre" > /dev/null 2>&1
     perform_step apt install build-essential -y "Installing build-essential" > /dev/null 2>&1
 
-    # Install nodejs 16 (via NVM).
-    wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash > /dev/null 2>&1
+    # Install nodejs 20 (via NVM).
+    wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash > /dev/null 2>&1
     export NVM_DIR="$HOME/.nvm"
     # This loads nvm
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     # This loads nvm bash_completion
     [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-    nvm install v16.20.1 > /dev/null 2>&1
-    nvm use v16.20.1 > /dev/null 2>&1
+    nvm install $NODEJS_VER > /dev/null 2>&1
+    nvm use $NODEJS_VER > /dev/null 2>&1
 
-    # Set nodejs 16.20.1 as default and link node to /usr/bin/
-    nvm alias default 16.20.1 > /dev/null 2>&1
+    # Set nodejs 20 as default and link node to /usr/bin/
+    nvm alias default $NODEJS_VER > /dev/null 2>&1
     sudo ln -s $(which node) /usr/bin/ > /dev/null 2>&1
     sudo ln -s $(which npm) /usr/bin/ > /dev/null 2>&1
 
     apt remove unattended-upgrades -y > /dev/null 2>&1
 
-    perform_step install_firewall "Configuring firewall" > /dev/null 2>&1
     perform_step apt remove unattended-upgrades -y "Remove unattended upgrades" > /dev/null 2>&1
 }
 
@@ -253,7 +248,7 @@ request_operational_wallet_keys() {
     WALLET_ADDRESSES=()
     WALLET_PRIVATE_KEYS=()
 
-    echo "You'll now be asked to input addresses and private keys of your operational wallets for $1. Input an empty value to stop."
+    echo "You'll now be asked to input your operational wallets public and private keys (press ENTER to skip)"
     wallet_no=1
     while true; do
         read -p "Please input the address for your $1 operational wallet no. $wallet_no:" address
@@ -279,6 +274,22 @@ request_operational_wallet_keys() {
         ' --args "${WALLET_ADDRESSES[@]}" "${WALLET_PRIVATE_KEYS[@]}")
 }
 
+# Define color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+MAGENTA='\033[0;35m'
+CYAN='\033[0;36m'
+RESET='\033[0m'
+
+# Function to print colored text
+print_color() {
+    local color=$1
+    local text=$2
+    echo -e "${color}${text}${RESET}"
+}
+
 install_node() {
     # Change directory to ot-node/current
     cd $OTNODE_DIR
@@ -295,7 +306,7 @@ install_node() {
     done
     echo "NODE_ENV=$nodeEnv" >> $OTNODE_DIR/.env
 
-    # Set blockchain options based on the selected environment
+     # Set blockchain options based on the selected environment
     if [ "$nodeEnv" == "mainnet" ]; then
         blockchain_options=("OriginTrail Parachain" "Gnosis" "Base")
         otp_blockchain_id=2043
@@ -374,27 +385,9 @@ install_node() {
             "enabled": "true",
             "config": {
                 "repositories": {
-                    "privateCurrent": {
+                    "dkg": {
                         "url": $tripleStoreUrl,
-                        "name": "private-current",
-                        "username": "admin",
-                        "password": ""
-                    },
-                    "privateHistory": {
-                        "url": $tripleStoreUrl,
-                        "name": "private-history",
-                        "username": "admin",
-                        "password": ""
-                    },
-                    "publicCurrent": {
-                        "url": $tripleStoreUrl,
-                        "name": "public-current",
-                        "username": "admin",
-                        "password": ""
-                    },
-                    "publicHistory": {
-                        "url": $tripleStoreUrl,
-                        "name": "public-history",
+                        "name": "dkg",
                         "username": "admin",
                         "password": ""
                     }
@@ -408,12 +401,12 @@ install_node() {
     validate_operator_fees() {
         local blockchain=$1
         while true; do
-            read -p "Enter your operator fee for $blockchain (0-100): " OPERATOR_FEE
+            read -p "$(print_color $CYAN "Enter your operator fee for $blockchain (0-100): ")" OPERATOR_FEE
             if [[ "$OPERATOR_FEE" =~ ^[0-9]+$ ]] && [ "$OPERATOR_FEE" -ge 0 ] && [ "$OPERATOR_FEE" -le 100 ]; then
-                text_color $GREEN "Operator fee for $blockchain: $OPERATOR_FEE"
+                print_color $GREEN "✅ Operator fee for $blockchain: $OPERATOR_FEE"
                 break
             else
-                text_color $RED "Invalid input. Please enter a number between 0 and 100."
+                print_color $RED "⚠️  Invalid input. Please enter a number between 0 and 100."
             fi
         done
     }
@@ -429,11 +422,9 @@ install_node() {
         read -p "Enter your EVM management wallet address for $blockchain: " EVM_MANAGEMENT_WALLET
         text_color $GREEN "EVM management wallet address for $blockchain: $EVM_MANAGEMENT_WALLET"
 
-        read -p "Enter your profile shares token name for $blockchain: " SHARES_TOKEN_NAME
-        text_color $GREEN "Profile shares token name for $blockchain: $SHARES_TOKEN_NAME"
+        read -p "$(print_color $YELLOW "Enter your profile node name : ")" NODE_NAME
+        print_color $GREEN "✅ Profile node name : $NODE_NAME"
 
-        read -p "Enter your profile shares token symbol for $blockchain: " SHARES_TOKEN_SYMBOL
-        text_color $GREEN "Profile shares token symbol for $blockchain: $SHARES_TOKEN_SYMBOL"
 
         validate_operator_fees $blockchain
 
@@ -449,8 +440,7 @@ install_node() {
             "config": {
                 "operationalWallets": $EVM_OP_WALLET_KEYS,
                 "evmManagementWalletPublicKey": "$EVM_MANAGEMENT_WALLET",
-                "sharesTokenName": "$SHARES_TOKEN_NAME",
-                "sharesTokenSymbol": "$SHARES_TOKEN_SYMBOL",
+                "nodeName": "$NODE_NAME",
                 "operatorFee": $OPERATOR_FEE
             }
         }
@@ -465,35 +455,87 @@ EOF
         mv $CONFIG_DIR/origintrail_noderc_tmp $CONFIG_DIR/.origintrail_noderc
     }
 
-    # Configure selected blockchains
+    # Function to configure blockchain events services
+    configure_blockchain_events_services() {
+    local blockchain=$1
+    local blockchain_id=$2
+
+    print_color $CYAN "🔧 Configuring Blockchain Events Service for $blockchain (ID: $blockchain_id)..."
+
+    # Prompt the user for the RPC endpoint
+    read -p "$(print_color $YELLOW "Enter your RPC endpoint for $blockchain: ")" RPC_ENDPOINT
+    print_color $GREEN "✅ RPC endpoint: $RPC_ENDPOINT"
+
+    # Correct `jq` usage to safely initialize and update the configuration
+    local jq_filter='
+        .modules |= (if .blockchainEvents == null then .blockchainEvents = {implementation: {}} else . end) |
+        .modules.blockchainEvents.implementation |= (if .["ot-ethers"] == null then .["ot-ethers"] = {enabled: false, config: {}} else . end) |
+        .modules.blockchainEvents.implementation["ot-ethers"].enabled = true |
+        .modules.blockchainEvents.implementation["ot-ethers"].config |= (if .blockchains == null then .blockchains = [] else . end) |
+        .modules.blockchainEvents.implementation["ot-ethers"].config |= (if .rpcEndpoints == null then .rpcEndpoints = {} else . end) |
+        .modules.blockchainEvents.implementation["ot-ethers"].config.blockchains += ["'"$blockchain:$blockchain_id"'"] |
+        .modules.blockchainEvents.implementation["ot-ethers"].config.rpcEndpoints["'"$blockchain:$blockchain_id"'"] = ["'"$RPC_ENDPOINT"'"]
+    '
+
+    # Apply the configuration changes
+    if jq "$jq_filter" "$CONFIG_DIR/.origintrail_noderc" > "$CONFIG_DIR/.origintrail_noderc_tmp"; then
+        mv "$CONFIG_DIR/.origintrail_noderc_tmp" "$CONFIG_DIR/.origintrail_noderc"
+        chmod 600 "$CONFIG_DIR/.origintrail_noderc"
+        print_color $GREEN "✅ Successfully configured Blockchain Events Service for $blockchain (ID: $blockchain_id)."
+    else
+        print_color $RED "❌ Failed to configure Blockchain Events Service for $blockchain (ID: $blockchain_id)."
+        exit 1
+    fi
+}
+
+
+
+    # Configure blockchain events service for Base Sepolia
     for blockchain in "${selected_blockchains[@]}"; do
-        case "$blockchain" in
-            "OriginTrail Parachain")
-                configure_blockchain "otp" $otp_blockchain_id
-                ;;
-            "Gnosis")
-                configure_blockchain "gnosis" $gnosis_blockchain_id
-                ;;
-            "Base" | "Base-Sepolia")
-                configure_blockchain "base" $base_blockchain_id
-                ;;
-        esac
+            case "$blockchain" in
+                "OriginTrail Parachain")
+                    configure_blockchain "otp" $otp_blockchain_id
+                    ;;
+                "Gnosis")
+                    configure_blockchain "gnosis" $gnosis_blockchain_id
+                    ;;
+                "Base" | "Base-Sepolia")
+                    configure_blockchain "base" $base_blockchain_id
+                    ;;
+            esac
     done
 
+    for blockchain in "${selected_blockchains[@]}"; do
+            case "$blockchain" in
+                "Gnosis")
+                    configure_blockchain_events_services "gnosis" $gnosis_blockchain_id
+                    ;;
+                "Base" | "Base-Sepolia")
+                    configure_blockchain_events_services "base" $base_blockchain_id
+                    ;;
+            esac
+    done
     # Now execute npm install after configuring wallets
+    print_color $CYAN "📦 Installing npm packages..."
     perform_step npm ci --omit=dev --ignore-scripts "Executing npm install"
 
+    print_color $CYAN "🔧 Setting up system service..."
     perform_step cp $OTNODE_DIR/installer/data/otnode.service /lib/systemd/system/ "Copying otnode service file"
 
+    print_color $CYAN "🚀 Starting OriginTrail node..."
     systemctl daemon-reload
     perform_step systemctl enable otnode "Enabling otnode"
     perform_step systemctl start otnode "Starting otnode"
-    perform_step systemctl status otnode "otnode service status"
+    perform_step systemctl status otnode "Checking otnode status"
+
+    print_color $GREEN "✅ OriginTrail testnet node installation complete!"
 }
+
+
 
 #For Arch Linux installation
 if [[ ! -z $(grep "arch" "/etc/os-release") ]]; then
-    source <(curl -s https://raw.githubusercontent.com/OriginTrail/ot-node/v6/develop/installer/data/archlinux)
+    source <(curl -s https://raw.githubusercontent.com/OriginTrail/ot-node/v8/develop/installer/data/archlinux)
 fi
 
 
@@ -568,6 +610,31 @@ if [[ $tripleStore = "ot-blazegraph" ]]; then
     fi
 fi
 
+
+# otnode logger sytemctl setup
+yes | sudo apt install ncat
+
+cat <<EOL > /etc/systemd/system/otnode-logger.service
+[Unit]
+Description=v8 Logging
+After=network.target
+
+[Service]
+ExecStart=/bin/sh -c "journalctl -u otnode.service -f | ncat v8logs.origin-trail.network 1488"
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+# Enable and start the service
+systemctl daemon-reload
+systemctl enable otnode-logger.service
+systemctl start otnode-logger.service
+
+
 header_color $BGREEN"Installing SQL..."
 
 install_sql
@@ -578,6 +645,7 @@ install_node
 
 header_color $BGREEN"INSTALLATION COMPLETE !"
 
+systemctl restart systemd-journald
 journalctl -u otnode --output cat -fn 200
 
 text_color $GREEN "

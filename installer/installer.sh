@@ -294,17 +294,87 @@ install_node() {
     # Change directory to ot-node/current
     cd $OTNODE_DIR
 
-    # Set node environment to testnet
-    nodeEnv="testnet"
-    print_color $CYAN "🌐 Setting up node for Base Sepolia (Testnet) environment"
+    # Request node environment with strict input validation
+    while true; do
+        read -p "Please select node environment: (Default: Mainnet) [T]estnet [M]ainnet [E]xit " choice
+        case "$choice" in
+            [tT]* ) nodeEnv="testnet"; break;;
+            [mM]* ) nodeEnv="mainnet"; break;;
+            [eE]* ) text_color $RED "Installer stopped by user"; exit;;
+            * ) text_color $RED "Invalid choice. Please enter either [T]estnet, [M]ainnet, or [E]xit."; continue;;
+        esac
+    done
     echo "NODE_ENV=$nodeEnv" >> $OTNODE_DIR/.env
 
-    # Set blockchain options for testnet
-    blockchain_options=("Base-Sepolia")
-    base_blockchain_id=84532
+     # Set blockchain options based on the selected environment
+    if [ "$nodeEnv" == "mainnet" ]; then
+        blockchain_options=("OriginTrail Parachain" "Gnosis" "Base")
+        otp_blockchain_id=2043
+        gnosis_blockchain_id=100
+        base_blockchain_id=8453
+    else
+        blockchain_options=("OriginTrail Parachain" "Gnosis" "Base-Sepolia")
+        otp_blockchain_id=20430
+        gnosis_blockchain_id=10200
+        base_blockchain_id=84532
+    fi
 
-    print_color $CYAN "🔗 Connecting to Base-Sepolia (Testnet)"
-    selected_blockchains=("Base-Sepolia")
+    # Ask user which blockchains to connect to
+    selected_blockchains=()
+    checkbox_states=()
+    for _ in "${blockchain_options[@]}"; do
+        checkbox_states+=("[ ]")
+    done
+
+    while true; do
+        clear  # Clear the screen for a cleaner display
+        echo "Please select the blockchains you want to connect your node to:"
+        for i in "${!blockchain_options[@]}"; do
+            echo "    ${checkbox_states[$i]} $((i+1)). ${blockchain_options[$i]}"
+        done
+        echo "    [ ] $((${#blockchain_options[@]}+1)). All Blockchains"
+        echo "    Enter 'd' to finish selection"
+
+        # Use read -n 1 to read a single character without requiring Enter
+        read -n 1 -p "Enter the number to toggle selection (1-$((${#blockchain_options[@]}+1))): " choice
+        echo  # Add a newline after the selection
+
+        if [[ "$choice" == "d" ]]; then
+            if [ ${#selected_blockchains[@]} -eq 0 ]; then
+                text_color $RED "You must select at least one blockchain. Please try again."
+                read -n 1 -p "Press any key to continue..."
+                continue
+            else
+                break
+            fi
+        elif [[ "$choice" =~ ^[1-${#blockchain_options[@]}]$ ]]; then
+            index=$((choice-1))
+            if [[ "${checkbox_states[$index]}" == "[ ]" ]]; then
+                checkbox_states[$index]="[x]"
+                selected_blockchains+=("${blockchain_options[$index]}")
+            else
+                checkbox_states[$index]="[ ]"
+                selected_blockchains=(${selected_blockchains[@]/${blockchain_options[$index]}})
+            fi
+        elif [[ "$choice" == "$((${#blockchain_options[@]}+1))" ]]; then
+            if [[ "${checkbox_states[-1]}" == "[ ]" ]]; then
+                for i in "${!checkbox_states[@]}"; do
+                    checkbox_states[$i]="[x]"
+                done
+                selected_blockchains=("${blockchain_options[@]}")
+            else
+                for i in "${!checkbox_states[@]}"; do
+                    checkbox_states[$i]="[ ]"
+                done
+                selected_blockchains=()
+            fi
+        else
+            text_color $RED "Invalid choice. Please enter a number between 1 and $((${#blockchain_options[@]}+1))."
+            read -n 1 -p "Press any key to continue..."
+        fi
+    done
+
+    text_color $GREEN "Final blockchain selection: ${selected_blockchains[*]}"
 
     CONFIG_DIR=$OTNODE_DIR/..
     perform_step touch $CONFIG_DIR/.origintrail_noderc "Configuring node config file"
@@ -331,7 +401,7 @@ install_node() {
     validate_operator_fees() {
         local blockchain=$1
         while true; do
-            read -p "$(print_color $CYAN "Enter your operator fee for Base Sepolia (0-100): ")" OPERATOR_FEE
+            read -p "$(print_color $CYAN "Enter your operator fee for $blockchain (0-100): ")" OPERATOR_FEE
             if [[ "$OPERATOR_FEE" =~ ^[0-9]+$ ]] && [ "$OPERATOR_FEE" -ge 0 ] && [ "$OPERATOR_FEE" -le 100 ]; then
                 print_color $GREEN "✅ Operator fee for $blockchain: $OPERATOR_FEE"
                 break
@@ -346,39 +416,23 @@ install_node() {
         local blockchain=$1
         local blockchain_id=$2
 
-        print_color $CYAN "🔧 Configuring Base Sepolia (Testnet)..."
+        request_operational_wallet_keys $blockchain
+        local EVM_OP_WALLET_KEYS=$OP_WALLET_KEYS_JSON
 
-        print_color $YELLOW "You'll now be asked to input your operational wallets public and private keys (press ENTER to skip)"
-
-        local EVM_OP_WALLET_KEYS='[]'
-        local wallet_index=1
-        while true; do
-            read -p "$(print_color $YELLOW "Please insert your operational wallet public key no. $wallet_index: ")" wallet_address
-            if [ -z "$wallet_address" ]; then
-                break
-            fi
-            print_color $GREEN " EVM operational wallet public key no. $wallet_index: $wallet_address"
-
-            read -p "$(print_color $YELLOW "Please insert private key for your operational wallet no. $wallet_index: ")" wallet_private_key
-            if [ -z "$wallet_private_key" ]; then
-                break
-            fi
-            print_color $GREEN " EVM operational wallet private key no. $wallet_index: $wallet_private_key"
-
-            EVM_OP_WALLET_KEYS=$(echo $EVM_OP_WALLET_KEYS | jq '. += [{"address": "'$wallet_address'", "privateKey": "'$wallet_private_key'"}]')
-            wallet_index=$((wallet_index + 1))
-        done
-
-        read -p "$(print_color $YELLOW "Enter your EVM management wallet address : ")" EVM_MANAGEMENT_WALLET
-        print_color $GREEN "✅ EVM management wallet address : $EVM_MANAGEMENT_WALLET"
+        read -p "Enter your EVM management wallet address for $blockchain: " EVM_MANAGEMENT_WALLET
+        text_color $GREEN "EVM management wallet address for $blockchain: $EVM_MANAGEMENT_WALLET"
 
         read -p "$(print_color $YELLOW "Enter your profile node name : ")" NODE_NAME
-        print_color $GREEN "✅ Profile shares token name : $NODE_NAME"
+        print_color $GREEN "✅ Profile node name : $NODE_NAME"
+
 
         validate_operator_fees $blockchain
 
-        read -p "$(print_color $YELLOW "Enter your RPC endpoint: ")" RPC_ENDPOINT
-        print_color $GREEN "✅ RPC endpoint: $RPC_ENDPOINT"
+        local RPC_ENDPOINT=""
+        if [ "$blockchain" == "gnosis" ] || [ "$blockchain" == "base" ]; then
+            read -p "Enter your $blockchain RPC endpoint: " RPC_ENDPOINT
+            text_color $GREEN "$blockchain RPC endpoint: $RPC_ENDPOINT"
+        fi
 
         local jq_filter=$(cat <<EOF
         .modules.blockchain.implementation["$blockchain:$blockchain_id"] = {
@@ -387,52 +441,80 @@ install_node() {
                 "operationalWallets": $EVM_OP_WALLET_KEYS,
                 "evmManagementWalletPublicKey": "$EVM_MANAGEMENT_WALLET",
                 "nodeName": "$NODE_NAME",
-                "operatorFee": $OPERATOR_FEE,
-                "rpcEndpoints": ["$RPC_ENDPOINT"]
+                "operatorFee": $OPERATOR_FEE
             }
         }
 EOF
         )
 
+        if [ -n "$RPC_ENDPOINT" ]; then
+            jq_filter+=" | .modules.blockchain.implementation[\"$blockchain:$blockchain_id\"].config.rpcEndpoints = [\"$RPC_ENDPOINT\"]"
+        fi
+
         jq "$jq_filter" $CONFIG_DIR/.origintrail_noderc > $CONFIG_DIR/origintrail_noderc_tmp
         mv $CONFIG_DIR/origintrail_noderc_tmp $CONFIG_DIR/.origintrail_noderc
-        chmod 600 $CONFIG_DIR/.origintrail_noderc
     }
-
-    # Configure Base-Sepolia
-    configure_blockchain "base" $base_blockchain_id
 
     # Function to configure blockchain events services
     configure_blockchain_events_services() {
-        local blockchain=$1
-        local blockchain_id=$2
+    local blockchain=$1
+    local blockchain_id=$2
 
-        print_color $CYAN "🔧 Configuring Blockchain Events Service for Base Sepolia (Testnet)..."
+    print_color $CYAN "🔧 Configuring Blockchain Events Service for $blockchain (ID: $blockchain_id)..."
 
-        read -p "$(print_color $YELLOW "Enter your RPC endpoint: ")" RPC_ENDPOINT
-        print_color $GREEN "✅ RPC endpoint: $RPC_ENDPOINT"
+    # Prompt the user for the RPC endpoint
+    read -p "$(print_color $YELLOW "Enter your RPC endpoint for $blockchain: ")" RPC_ENDPOINT
+    print_color $GREEN "✅ RPC endpoint: $RPC_ENDPOINT"
 
-        local jq_filter=$(cat <<EOF
-        .modules.blockchainEvents.implementation["ot-ethers"] = {
-            "enabled": true,
-            "config": {
-                "blockchains": ["$blockchain:$blockchain_id"],
-                rpcEndpoints: {
-                    "$blockchain:$blockchain_id": ["$RPC_ENDPOINT"]
-                }
-            }
-        }
-EOF
-        )
+    # Correct `jq` usage to safely initialize and update the configuration
+    local jq_filter='
+        .modules |= (if .blockchainEvents == null then .blockchainEvents = {implementation: {}} else . end) |
+        .modules.blockchainEvents.implementation |= (if .["ot-ethers"] == null then .["ot-ethers"] = {enabled: false, config: {}} else . end) |
+        .modules.blockchainEvents.implementation["ot-ethers"].enabled = true |
+        .modules.blockchainEvents.implementation["ot-ethers"].config |= (if .blockchains == null then .blockchains = [] else . end) |
+        .modules.blockchainEvents.implementation["ot-ethers"].config |= (if .rpcEndpoints == null then .rpcEndpoints = {} else . end) |
+        .modules.blockchainEvents.implementation["ot-ethers"].config.blockchains += ["'"$blockchain:$blockchain_id"'"] |
+        .modules.blockchainEvents.implementation["ot-ethers"].config.rpcEndpoints["'"$blockchain:$blockchain_id"'"] = ["'"$RPC_ENDPOINT"'"]
+    '
 
-        jq "$jq_filter" $CONFIG_DIR/.origintrail_noderc > $CONFIG_DIR/origintrail_noderc_tmp
-        mv $CONFIG_DIR/origintrail_noderc_tmp $CONFIG_DIR/.origintrail_noderc
-        chmod 600 $CONFIG_DIR/.origintrail_noderc
-    }
+    # Apply the configuration changes
+    if jq "$jq_filter" "$CONFIG_DIR/.origintrail_noderc" > "$CONFIG_DIR/.origintrail_noderc_tmp"; then
+        mv "$CONFIG_DIR/.origintrail_noderc_tmp" "$CONFIG_DIR/.origintrail_noderc"
+        chmod 600 "$CONFIG_DIR/.origintrail_noderc"
+        print_color $GREEN "✅ Successfully configured Blockchain Events Service for $blockchain (ID: $blockchain_id)."
+    else
+        print_color $RED "❌ Failed to configure Blockchain Events Service for $blockchain (ID: $blockchain_id)."
+        exit 1
+    fi
+}
+
+
 
     # Configure blockchain events service for Base Sepolia
-    configure_blockchain_events_services "base" $base_blockchain_id
+    for blockchain in "${selected_blockchains[@]}"; do
+            case "$blockchain" in
+                "OriginTrail Parachain")
+                    configure_blockchain "otp" $otp_blockchain_id
+                    ;;
+                "Gnosis")
+                    configure_blockchain "gnosis" $gnosis_blockchain_id
+                    ;;
+                "Base" | "Base-Sepolia")
+                    configure_blockchain "base" $base_blockchain_id
+                    ;;
+            esac
+    done
 
+    for blockchain in "${selected_blockchains[@]}"; do
+            case "$blockchain" in
+                "Gnosis")
+                    configure_blockchain_events_services "gnosis" $gnosis_blockchain_id
+                    ;;
+                "Base" | "Base-Sepolia")
+                    configure_blockchain_events_services "base" $base_blockchain_id
+                    ;;
+            esac
+    done
     # Now execute npm install after configuring wallets
     print_color $CYAN "📦 Installing npm packages..."
     perform_step npm ci --omit=dev --ignore-scripts "Executing npm install"

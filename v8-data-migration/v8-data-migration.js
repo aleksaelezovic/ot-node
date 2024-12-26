@@ -110,7 +110,7 @@ async function processAndInsertNewerAssertions(
 
         if (assertionsToCheck.length > 0) {
             const { tokenId, ual, privateAssertion } = assertionsToCheck[0];
-            const knowledgeAssetUal = `${ual}/1`;
+            const knowledgeAssetUal = `${ual.toLowerCase()}/1`;
             logger.time(`GETTING KNOWLEDGE COLLECTION NAMED GRAPHS EXIST FOR 1 ASSERTION`);
             // eslint-disable-next-line no-await-in-loop
             const { exists } = await getKnowledgeCollectionNamedGraphsExist(
@@ -182,7 +182,7 @@ async function processAndInsertAssertions(
     const promises = [];
     for (const assertion of assertionsToCheck) {
         const { tokenId, ual, privateAssertion } = assertion;
-        const knowledgeAssetUal = `${ual}/1`;
+        const knowledgeAssetUal = `${ual.toLowerCase()}/1`;
 
         promises.push(
             getKnowledgeCollectionNamedGraphsExist(

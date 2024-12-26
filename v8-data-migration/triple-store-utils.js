@@ -607,7 +607,7 @@ export async function insertAssertionsIntoV8UnifiedRepository(
             continue;
         }
 
-        const knowledgeAssetUal = `${ual}/1`;
+        const knowledgeAssetUal = `${ual.toLowerCase()}/1`;
 
         const publicNQuads = processContent(publicAssertion);
         insertQueries.push(`

@@ -39,55 +39,54 @@ export const ABIs = {
     ContentAssetStorageV2: require('./abi/ContentAssetStorageV2.json'),
     ContentAssetStorage: require('./abi/ContentAssetStorage.json'),
 };
-
 export const BLOCKCHAINS = {
     BASE_DEVNET: {
         ID: 'base:84532',
         ENV: 'devnet',
         NAME: 'base_devnet',
-        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0xBe08A25dcF2B68af88501611e5456571f50327B4',
+        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0xbe08a25dcf2b68af88501611e5456571f50327b4',
     },
     BASE_TESTNET: {
         ID: 'base:84532',
         ENV: 'testnet',
         NAME: 'base_testnet',
-        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x9e3071Dc0730CB6dd0ce42969396D716Ea33E7e1',
+        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x9e3071dc0730cb6dd0ce42969396d716ea33e7e1',
     },
     BASE_MAINNET: {
         ID: 'base:8453',
         ENV: 'mainnet',
         NAME: 'base_mainnet',
-        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x3bdfA81079B2bA53a25a6641608E5E1E6c464597',
+        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x3bdfa81079b2ba53a25a6641608e5e1e6c464597',
     },
     GNOSIS_DEVNET: {
         ID: 'gnosis:10200',
         ENV: 'devnet',
         NAME: 'gnosis_devnet',
-        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x3db64dD0Ac054610d1e2Af9Cca0fbCB1A7f4C2d8',
+        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x3db64dd0ac054610d1e2af9cca0fbcb1a7f4c2d8',
     },
     GNOSIS_TESTNET: {
         ID: 'gnosis:10200',
         ENV: 'testnet',
         NAME: 'gnosis_testnet',
-        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0xeA3423e02c8d231532dab1BCE5D034f3737B3638',
+        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0xea3423e02c8d231532dab1bce5d034f3737b3638',
     },
     GNOSIS_MAINNET: {
         ID: 'gnosis:100',
         ENV: 'mainnet',
         NAME: 'gnosis_mainnet',
-        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0xf81a8C0008DE2DCdb73366Cf78F2b178616d11DD',
+        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0xf81a8c0008de2dcdb73366cf78f2b178616d11dd',
     },
     NEUROWEB_TESTNET: {
         ID: 'otp:20430',
         ENV: 'testnet',
         NAME: 'neuroweb_testnet',
-        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x1A061136Ed9f5eD69395f18961a0a535EF4B3E5f',
+        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x1a061136ed9f5ed69395f18961a0a535ef4b3e5f',
     },
     NEUROWEB_MAINNET: {
         ID: 'otp:2043',
         ENV: 'mainnet',
         NAME: 'neuroweb_mainnet',
-        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x5cAC41237127F94c2D21dAe0b14bFeFa99880630',
+        CONTENT_ASSET_STORAGE_CONTRACT_ADDRESS: '0x5cac41237127f94c2d21dae0b14bfefa99880630',
     },
 };
 

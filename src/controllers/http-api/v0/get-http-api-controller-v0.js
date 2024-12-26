@@ -1,9 +1,9 @@
 import {
     OPERATION_ID_STATUS,
     OPERATION_STATUS,
-    CONTENT_ASSET_HASH_FUNCTION_ID,
-    DEFAULT_GET_STATE,
     ERROR_TYPE,
+    TRIPLES_VISIBILITY,
+    OLD_CONTENT_STORAGE_MAP,
 } from '../../../constants/constants.js';
 import BaseController from '../base-http-api-controller.js';
 
@@ -16,6 +16,7 @@ class GetController extends BaseController {
         this.repositoryModuleManager = ctx.repositoryModuleManager;
         this.ualService = ctx.ualService;
         this.validationService = ctx.validationService;
+        this.fileService = ctx.fileService;
     }
 
     async handleRequest(req, res) {
@@ -39,49 +40,59 @@ class GetController extends BaseController {
             OPERATION_STATUS.IN_PROGRESS,
         );
 
+        let tripleStoreMigrationAlreadyExecuted = false;
+        try {
+            tripleStoreMigrationAlreadyExecuted =
+                (await this.fileService.readFile(
+                    '/root/ot-node/data/migrations/v8DataMigration',
+                )) === 'MIGRATED';
+        } catch (e) {
+            this.logger.warn(`No triple store migration file error: ${e}`);
+        }
         let blockchain;
         let contract;
-        let tokenId;
+        let knowledgeCollectionId;
+        let knowledgeAssetId;
         try {
-            const { id } = req.body;
-
-            if (!this.ualService.isUAL(id)) {
-                throw Error('Requested id is not a UAL.');
-            }
-
-            ({ blockchain, contract, tokenId } = this.ualService.resolveUAL(id));
-
-            const isValidUal = await this.validationService.validateUal(
-                blockchain,
-                contract,
-                tokenId,
-            );
-            if (!isValidUal) {
-                throw Error(`${id} UAL isn't valid.`);
-            }
-
-            const state = req.body.state ?? DEFAULT_GET_STATE;
-            const hashFunctionId = req.body.hashFunctionId ?? CONTENT_ASSET_HASH_FUNCTION_ID;
-
+            const { paranetUAL, includeMetadata, contentType } = req.body;
+            let { id } = req.body;
+            ({ blockchain, contract, knowledgeCollectionId, knowledgeAssetId } =
+                this.ualService.resolveUAL(id));
+            contract = contract.toLowerCase();
+            id = this.ualService.deriveUAL(blockchain, contract, knowledgeCollectionId);
             this.logger.info(`Get for ${id} with operation id ${operationId} initiated.`);
 
-            const commandSequence = [
-                'getAssertionIdCommand',
-                'localGetCommand',
-                'networkGetCommand',
-            ];
+            // Get assertionId - datasetRoot
+            //
+
+            const commandSequence = [];
+
+            if (
+                !tripleStoreMigrationAlreadyExecuted &&
+                Object.values(OLD_CONTENT_STORAGE_MAP)
+                    .map((ca) => ca.toLowerCase())
+                    .includes(contract.toLowerCase())
+            ) {
+                commandSequence.push('getAssertionMerkleRootCommand');
+            }
+
+            commandSequence.push('getFindShardCommand');
 
             await this.commandExecutor.add({
                 name: commandSequence[0],
                 sequence: commandSequence.slice(1),
                 delay: 0,
                 data: {
+                    ual: id,
+                    includeMetadata,
                     blockchain,
                     contract,
-                    tokenId,
+                    knowledgeCollectionId,
+                    knowledgeAssetId,
                     operationId,
-                    state,
-                    hashFunctionId,
+                    paranetUAL,
+                    contentType: contentType ?? TRIPLES_VISIBILITY.ALL,
+                    isOperationV0: true,
                 },
                 transactional: false,
             });

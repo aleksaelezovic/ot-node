@@ -1,130 +1,36 @@
-import path from 'path';
 import appRootPath from 'app-root-path';
+import path from 'path';
 import BaseMigration from './base-migration.js';
-import { NODE_ENVIRONMENTS } from '../constants/constants.js';
 
 class TripleStoreUserConfigurationMigration extends BaseMigration {
     async executeMigration() {
-        if (
-            process.env.NODE_ENV !== NODE_ENVIRONMENTS.DEVELOPMENT &&
-            process.env.NODE_ENV !== NODE_ENVIRONMENTS.TEST
-        ) {
-            const configurationFolderPath = path.join(appRootPath.path, '..');
-            const configurationFilePath = path.join(
-                configurationFolderPath,
-                this.config.configFilename,
-            );
+        const configurationFolderPath = path.join(appRootPath.path, '..');
+        const configurationFilePath = path.join(
+            configurationFolderPath,
+            this.config.configFilename,
+        );
 
-            const userConfiguration = await this.fileService.readFile(configurationFilePath, true);
-            if (userConfiguration.modules.tripleStore.implementation) {
-                for (const implementationName in userConfiguration.modules.tripleStore
-                    .implementation) {
-                    const oldImplementationConfig =
-                        userConfiguration.modules.tripleStore.implementation[implementationName]
-                            .config;
-                    if (oldImplementationConfig && !oldImplementationConfig.repositories) {
-                        let { url, username, password, repository } = oldImplementationConfig;
+        const userConfiguration = await this.fileService.readFile(configurationFilePath, true);
 
-                        if (!url) {
-                            url =
-                                implementationName === 'ot-blazegraph'
-                                    ? 'http://localhost:9999'
-                                    : 'http://localhost:3030';
-                        }
+        if ('tripleStore' in userConfiguration.modules) {
+            const oldConfigTripleStore = userConfiguration.modules;
+            for (const implementation in oldConfigTripleStore.tripleStore.implementation) {
+                if (oldConfigTripleStore.tripleStore.implementation[implementation].enabled) {
+                    const { url, username, password } =
+                        oldConfigTripleStore.tripleStore.implementation[implementation].config
+                            .repositories.publicCurrent;
 
-                        if (!username) {
-                            username = 'admin';
-                        }
-
-                        if (!password) {
-                            password = '';
-                        }
-
-                        if (!repository) {
-                            if (implementationName === 'ot-blazegraph') {
-                                repository = 'kb';
-                            }
-                            if (implementationName === 'ot-fuseki') {
-                                repository = 'node0';
-                            }
-                        }
-                        const newImplementationConfig = {
-                            repositories: {
-                                publicCurrent: {
-                                    url,
-                                    name: repository,
-                                    username,
-                                    password,
-                                },
-                                publicHistory: {
-                                    url,
-                                    name: 'public-history',
-                                    username,
-                                    password,
-                                },
-                                privateCurrent: {
-                                    url,
-                                    name: 'private-current',
-                                    username,
-                                    password,
-                                },
-                                privateHistory: {
-                                    url,
-                                    name: 'private-history',
-                                    username,
-                                    password,
-                                },
-                            },
-                        };
-
-                        userConfiguration.modules.tripleStore.implementation[
-                            implementationName
-                        ].config = newImplementationConfig;
-                    }
-                }
-            } else {
-                const configurationTemplatePath = path.join(
-                    appRootPath.path,
-                    'tools',
-                    'local-network-setup',
-                    '.origintrail_noderc_template.json',
-                );
-                const configurationTemplate = await this.fileService.readFile(
-                    configurationTemplatePath,
-                    true,
-                );
-
-                if (
-                    userConfiguration.modules.tripleStore.defaultImplementation === 'ot-blazegraph'
-                ) {
-                    userConfiguration.modules.tripleStore.implementation = {
-                        'ot-blazegraph':
-                            configurationTemplate.modules.tripleStore.implementation[
-                                'ot-blazegraph'
-                            ],
+                    oldConfigTripleStore.tripleStore.implementation[
+                        implementation
+                    ].config.repositories.dkg = {
+                        url,
+                        name: 'dkg',
+                        username,
+                        password,
                     };
-                    configurationTemplate.modules.tripleStore.implementation[
-                        'ot-blazegraph'
-                    ].enabled = true;
-                    configurationTemplate.modules.tripleStore.implementation[
-                        'ot-blazegraph'
-                    ].config.repositories.publicCurrent.name = 'kb';
-                } else if (
-                    userConfiguration.modules.tripleStore.defaultImplementation === 'ot-fuseki'
-                ) {
-                    userConfiguration.modules.tripleStore.implementation = {
-                        'ot-fuseki':
-                            configurationTemplate.modules.tripleStore.implementation['ot-fuseki'],
-                    };
-                    configurationTemplate.modules.tripleStore.implementation[
-                        'ot-fuseki'
-                    ].enabled = true;
-                    configurationTemplate.modules.tripleStore.implementation[
-                        'ot-fuseki'
-                    ].config.repositories.publicCurrent.name = 'node0';
                 }
             }
-            delete userConfiguration.modules.tripleStore.defaultImplementation;
+
             await this.fileService.writeContentsToFile(
                 configurationFolderPath,
                 this.config.configFilename,

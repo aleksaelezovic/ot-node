@@ -891,7 +891,7 @@
                         "enabled": false,
                         "package": "./blockchain/implementation/ot-parachain/ot-parachain-service.js",
                         "config": {
-                            "hubContractAddress": "0x5fA7916c48Fe6D5F1738d12Ad234b78c90B4cAdA",
+                            "hubContractAddress": "0x0957e25BD33034948abc28204ddA54b6E1142D6F",
                             "rpcEndpoints": [
                                 "https://astrosat-parachain-rpc.origin-trail.network",
                                 "https://astrosat.origintrail.network/",
@@ -904,7 +904,7 @@
                         "enabled": false,
                         "package": "./blockchain/implementation/gnosis/gnosis-service.js",
                         "config": {
-                            "hubContractAddress": "0xbEF14fc04F870c2dD65c13Df4faB6ba01A9c746b",
+                            "hubContractAddress": "0x882D0BF07F956b1b94BBfe9E77F47c6fc7D4EC8f",
                             "gasPriceOracleLink": "https://api.gnosisscan.io/api?module=proxy&action=eth_gasPrice",
                             "operatorFee": 0
                         }
@@ -914,7 +914,7 @@
                         "package": "./blockchain/implementation/base/base-service.js",
 
                         "config": {
-                            "hubContractAddress": "0xaBfcf2ad1718828E7D3ec20435b0d0b5EAfbDf2c",
+                            "hubContractAddress": "0x99Aa571fD5e681c2D27ee08A7b7989DB02541d13",
                             "operatorFee": 0
                         }
                     }
@@ -971,7 +971,7 @@
                         "enabled": true,
                         "package": "./blockchain-events/implementation/ot-ethers/ot-ethers.js",
                         "config": {
-                            "blockchains": ["otp:2043"],
+                            "blockchains": ["otp:2043", "gnosis:100", "base:8453"],
                             "rpcEndpoints": {
                                 "otp:2043": [
                                     "https://astrosat-parachain-rpc.origin-trail.network",
@@ -980,7 +980,9 @@
                                 ]
                             },
                             "hubContractAddress": {
-                                "otp:2043": "0x5fA7916c48Fe6D5F1738d12Ad234b78c90B4cAdA"
+                                "otp:2043": "0x5fA7916c48Fe6D5F1738d12Ad234b78c90B4cAdA",
+                                "gnosis:100": "0x882D0BF07F956b1b94BBfe9E77F47c6fc7D4EC8f",
+                                "base:8453": "0x99Aa571fD5e681c2D27ee08A7b7989DB02541d13"
                             }
                         }
                     }

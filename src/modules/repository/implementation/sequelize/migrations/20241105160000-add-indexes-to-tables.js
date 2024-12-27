@@ -2,17 +2,6 @@ export async function up({ context: { queryInterface } }) {
     const indexes = [
         { table: 'shard', column: ['blockchain_id'], name: 'shard_blockchain_id_index' },
         { table: 'shard', column: ['last_dialed'], name: 'last_dialed_index' },
-        {
-            table: 'service_agreement',
-            column: ['blockchain_id'],
-            name: 'service_agreement_blockchain_id_index',
-        },
-        {
-            table: 'service_agreement',
-            column: ['blockchain_id', 'token_id'],
-            name: 'blockchain_id_token_id_index',
-        },
-        { table: 'service_agreement', column: ['token_id'], name: 'token_id_index' },
         { table: 'paranet_synced_asset', column: ['ual'], name: 'paranet_synced_asset_ual_index' },
         {
             table: 'paranet_synced_asset',
@@ -102,12 +91,6 @@ export async function down({ context: { queryInterface } }) {
     await queryInterface.removeIndex('shard', 'shard_blockchain_id_index');
 
     await queryInterface.removeIndex('shard', 'last_dialed_index');
-
-    await queryInterface.removeIndex('service_agreement', 'service_agreement_blockchain_id_index');
-
-    await queryInterface.removeIndex('service_agreement', 'blockchain_id_token_id_index');
-
-    await queryInterface.removeIndex('service_agreement', 'token_id_index');
 
     await queryInterface.removeIndex('paranet_synced_asset', 'paranet_synced_asset_ual_index');
 

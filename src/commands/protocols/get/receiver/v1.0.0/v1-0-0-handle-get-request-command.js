@@ -173,7 +173,15 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
                         burned: [],
                     };
                 }
+            } else {
+                // kaId is number, so transform it to range
+                knowledgeAssetId = {
+                    startTokenId: knowledgeAssetId,
+                    endTokenId: knowledgeAssetId,
+                    burned: [],
+                };
             }
+
             assertionPromise = this.tripleStoreService
                 .getAssertion(
                     blockchain,

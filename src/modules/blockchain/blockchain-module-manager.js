@@ -278,6 +278,14 @@ class BlockchainModuleManager extends BaseModuleManager {
             tokenId,
         ]);
     }
+
+    getImplementation(name = null) {
+        const keys = Object.keys(this.handlers);
+        if (!keys.includes(name)) {
+            throw new Error(`Blockchain: ${name} implementation is not enabled.`);
+        }
+        return this.handlers[name];
+    }
 }
 
 export default BlockchainModuleManager;

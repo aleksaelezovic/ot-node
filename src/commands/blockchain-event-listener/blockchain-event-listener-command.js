@@ -209,12 +209,12 @@ class BlockchainEventListenerCommand extends Command {
     }
 
     async handleParameterChangedEvent(event) {
-        const { blockchainId, contract, data } = event;
+        const { blockchain, contract, data } = event;
         const { parameterName, parameterValue } = JSON.parse(data);
         switch (contract) {
             case CONTRACTS.PARAMETERS_STORAGE:
                 this.blockchainModuleManager.setContractCallCache(
-                    blockchainId,
+                    blockchain,
                     CONTRACTS.PARAMETERS_STORAGE,
                     parameterName,
                     parameterValue,

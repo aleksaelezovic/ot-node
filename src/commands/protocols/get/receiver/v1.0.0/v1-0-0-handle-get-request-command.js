@@ -125,43 +125,50 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
 
         if (assertionId) {
             // DO NOT RUN THIS IF !assertionId
-            assertionPromise = this.tripleStoreService
-                .getV6Assertion(TRIPLE_STORE_REPOSITORIES.PUBLIC_CURRENT, assertionId)
-                .then(async (result) => {
-                    if (!result?.length) {
-                        this.logger.info(
-                            `No V6 assertion found for assertionId: ${assertionId}, falling back to V8 getAssertion`,
-                        );
+            assertionPromise = (async () => {
+                let result = null;
 
-                        const fallbackResult = await this.tripleStoreService.getAssertion(
+                if (!isOperationV0) {
+                    result = await this.tripleStoreService.getAssertion(
+                        blockchain,
+                        contract,
+                        knowledgeCollectionId,
+                        knowledgeAssetId,
+                        TRIPLES_VISIBILITY.PUBLIC,
+                    );
+                }
+
+                if (!result?.length) {
+                    // eslint-disable-next-line no-await-in-loop
+                    result = await this.tripleStoreService.getV6Assertion(
+                        TRIPLE_STORE_REPOSITORIES.PUBLIC_CURRENT,
+                        assertionId,
+                    );
+                    if (result?.length && !isOperationV0) {
+                        notMigrated = true;
+                    }
+
+                    if (!result?.length && isOperationV0) {
+                        result = await this.tripleStoreService.getAssertion(
                             blockchain,
                             contract,
                             knowledgeCollectionId,
                             knowledgeAssetId,
                             TRIPLES_VISIBILITY.PUBLIC,
                         );
-
-                        this.operationIdService.emitChangeEvent(
-                            OPERATION_ID_STATUS.GET.GET_REMOTE_GET_ASSERTION_END,
-                            operationId,
-                            blockchain,
-                        );
-
-                        return fallbackResult;
                     }
+                }
 
-                    if (!isOperationV0) {
-                        notMigrated = true;
-                    }
+                this.operationIdService.emitChangeEvent(
+                    OPERATION_ID_STATUS.GET.GET_REMOTE_GET_ASSERTION_END,
+                    operationId,
+                    blockchain,
+                );
 
-                    this.operationIdService.emitChangeEvent(
-                        OPERATION_ID_STATUS.GET.GET_REMOTE_GET_ASSERTION_END,
-                        operationId,
-                        blockchain,
-                    );
-
-                    return result.split('\n').filter((res) => res.length > 0);
-                });
+                return typeof result === 'string'
+                    ? result.split('\n').filter((res) => res.length > 0)
+                    : result;
+            })();
         } else {
             if (!knowledgeAssetId) {
                 try {

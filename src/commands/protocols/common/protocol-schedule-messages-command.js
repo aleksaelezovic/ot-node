@@ -41,7 +41,6 @@ class ProtocolScheduleMessagesCommand extends Command {
             }, leftover for retry: ${currentBatchLeftoverNodes.length}`,
         );
         const nextCommandData = this.getNextCommandData(command);
-        console.log('NEXT COMMAND DATA:', JSON.stringify(nextCommandData, null, 2));
 
         const addCommandPromises = currentBatchNodes.map(async (node) => {
             const commandSequence = this.protocolService.getSenderCommandSequence(node.protocol);

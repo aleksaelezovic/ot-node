@@ -6,12 +6,8 @@ class BlockchainModuleManager extends BaseModuleManager {
     }
 
     callImplementationFunction(blockchain, functionName, args = []) {
-        if (blockchain) {
-            if (this.getImplementation(blockchain)) {
-                return this.getImplementation(blockchain).module[functionName](...args);
-            }
-        } else {
-            return this.getImplementation().module[functionName](...args);
+        if (this.getImplementation(blockchain)) {
+            return this.getImplementation(blockchain).module[functionName](...args);
         }
     }
 

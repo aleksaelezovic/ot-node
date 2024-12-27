@@ -40,6 +40,7 @@ class ProtocolScheduleMessagesCommand extends Command {
                 currentBatchNodes.length
             }, leftover for retry: ${currentBatchLeftoverNodes.length}`,
         );
+        const nextCommandData = this.getNextCommandData(command);
 
         const addCommandPromises = currentBatchNodes.map(async (node) => {
             const commandSequence = this.protocolService.getSenderCommandSequence(node.protocol);
@@ -48,7 +49,7 @@ class ProtocolScheduleMessagesCommand extends Command {
                 sequence: commandSequence.slice(1),
                 delay: 0,
                 data: {
-                    ...this.getNextCommandData(command),
+                    ...nextCommandData,
                     blockchain,
                     operationId,
                     node,

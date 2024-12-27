@@ -7,7 +7,6 @@ import {
     OPERATION_STATUS,
     OPERATION_ID_STATUS,
     PRIVATE_HASH_SUBJECT_PREFIX,
-    OLD_CONTENT_STORAGE_MAP,
 } from '../../../../../constants/constants.js';
 
 class GetRequestCommand extends ProtocolRequestCommand {
@@ -52,6 +51,7 @@ class GetRequestCommand extends ProtocolRequestCommand {
             paranetId,
             isOperationV0,
             assertionId,
+            isOldContract,
         } = command.data;
 
         return {
@@ -65,16 +65,19 @@ class GetRequestCommand extends ProtocolRequestCommand {
             paranetId,
             isOperationV0,
             assertionId,
+            isOldContract,
         };
     }
 
     async handleAck(command, responseData) {
-        const { blockchain, contract, knowledgeCollectionId, knowledgeAssetId, isOperationV0 } =
-            command.data;
-
-        const isOldContract = Object.values(OLD_CONTENT_STORAGE_MAP).some((ca) =>
-            ca.toLowerCase().includes(contract.toLowerCase()),
-        );
+        const {
+            blockchain,
+            contract,
+            knowledgeCollectionId,
+            knowledgeAssetId,
+            isOperationV0,
+            isOldContract,
+        } = command.data;
 
         if (responseData?.assertion?.public) {
             // Only whole collection can be validated not particular KA

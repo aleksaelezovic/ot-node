@@ -66,15 +66,14 @@ class GetController extends BaseController {
             // Get assertionId - datasetRoot
             //
 
+            const isOldContract = Object.values(OLD_CONTENT_STORAGE_MAP).some((ca) =>
+                ca.toLowerCase().includes(contract.toLowerCase()),
+            );
+
             const commandSequence = [];
             commandSequence.push('getValidateAssetCommand');
 
-            if (
-                !tripleStoreMigrationAlreadyExecuted &&
-                Object.values(OLD_CONTENT_STORAGE_MAP)
-                    .map((ca) => ca.toLowerCase())
-                    .includes(contract.toLowerCase())
-            ) {
+            if (!tripleStoreMigrationAlreadyExecuted && isOldContract) {
                 commandSequence.push('getAssertionMerkleRootCommand');
             }
 
@@ -93,6 +92,7 @@ class GetController extends BaseController {
                     knowledgeAssetId,
                     operationId,
                     paranetUAL,
+                    isOldContract,
                     contentType: contentType ?? TRIPLES_VISIBILITY.ALL,
                 },
                 transactional: false,

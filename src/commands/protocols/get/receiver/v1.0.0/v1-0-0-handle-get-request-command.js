@@ -37,6 +37,7 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
             ual,
             includeMetadata,
             isOperationV0,
+            isOldContract,
         } = commandData;
 
         let { assertionId, knowledgeAssetId } = commandData;
@@ -109,6 +110,7 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
         );
 
         let assertionPromise;
+        let notMigrated = false;
 
         if (!assertionId) {
             assertionId = await this.tripleStoreService.getLatestAssertionId(
@@ -146,6 +148,10 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
                         );
 
                         return fallbackResult;
+                    }
+
+                    if (!isOperationV0) {
+                        notMigrated = true;
                     }
 
                     this.operationIdService.emitChangeEvent(
@@ -215,9 +221,10 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
         const [assertion, metadata] = await Promise.all(promises);
 
         const responseData = {
-            assertion: isOperationV0
-                ? [...(assertion.public ?? []), ...(assertion.private ?? [])]
-                : assertion,
+            assertion:
+                (isOperationV0 || notMigrated) && isOldContract
+                    ? [...(assertion.public ?? []), ...(assertion.private ?? [])]
+                    : assertion,
             ...(includeMetadata && metadata && { metadata }),
         };
 

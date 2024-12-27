@@ -35,6 +35,7 @@ class LocalGetCommand extends Command {
             contentType,
             assertionId,
             isOperationV0,
+            isOldContract,
         } = command.data;
         let { knowledgeAssetId } = command.data;
         await this.operationIdService.updateOperationIdStatus(
@@ -103,23 +104,13 @@ class LocalGetCommand extends Command {
         );
 
         let assertionPromise;
+        let notMigrated = false;
 
         if (assertionId) {
             assertionPromise = (async () => {
                 let result = null;
 
-                for (const repository of [
-                    TRIPLE_STORE_REPOSITORIES.PRIVATE_CURRENT,
-                    TRIPLE_STORE_REPOSITORIES.PUBLIC_CURRENT,
-                ]) {
-                    // eslint-disable-next-line no-await-in-loop
-                    result = await this.tripleStoreService.getV6Assertion(repository, assertionId);
-                    if (result?.length) {
-                        break;
-                    }
-                }
-
-                if (!result?.length) {
+                if (!isOperationV0) {
                     result = await this.tripleStoreService.getAssertion(
                         blockchain,
                         contract,
@@ -128,6 +119,35 @@ class LocalGetCommand extends Command {
                         contentType,
                     );
                 }
+
+                if (!result?.length) {
+                    for (const repository of [
+                        TRIPLE_STORE_REPOSITORIES.PRIVATE_CURRENT,
+                        TRIPLE_STORE_REPOSITORIES.PUBLIC_CURRENT,
+                    ]) {
+                        // eslint-disable-next-line no-await-in-loop
+                        result = await this.tripleStoreService.getV6Assertion(
+                            repository,
+                            assertionId,
+                        );
+                        if (result?.length) {
+                            if (!isOperationV0) {
+                                notMigrated = true;
+                            }
+                            break;
+                        }
+                    }
+                    if (!result?.length && isOperationV0) {
+                        result = await this.tripleStoreService.getAssertion(
+                            blockchain,
+                            contract,
+                            knowledgeCollectionId,
+                            knowledgeAssetId,
+                            contentType,
+                        );
+                    }
+                }
+
                 this.operationIdService.emitChangeEvent(
                     OPERATION_ID_STATUS.GET.GET_LOCAL_GET_ASSERTION_END,
                     operationId,
@@ -198,9 +218,10 @@ class LocalGetCommand extends Command {
         const [assertion, metadata] = await Promise.all(promises);
 
         const responseData = {
-            assertion: isOperationV0
-                ? [...(assertion?.public ?? []), ...(assertion?.private ?? [])]
-                : assertion,
+            assertion:
+                (isOperationV0 || notMigrated) && isOldContract
+                    ? [...(assertion?.public ?? []), ...(assertion?.private ?? [])]
+                    : assertion,
             ...(includeMetadata && metadata && { metadata }),
         };
 

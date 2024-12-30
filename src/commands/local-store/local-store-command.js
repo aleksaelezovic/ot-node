@@ -196,9 +196,8 @@ class LocalStoreCommand extends Command {
             let r;
             let s;
             let vs;
-            let identityId;
+            const identityId = await this.blockchainModuleManager.getIdentityId(blockchain);
             if (nodePartOfShard) {
-                identityId = await this.blockchainModuleManager.getIdentityId(blockchain);
                 ({ v, r, s, vs } = await this.signatureService.signMessage(
                     blockchain,
                     datasetRoot,

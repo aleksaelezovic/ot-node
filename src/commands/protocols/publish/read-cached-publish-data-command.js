@@ -10,10 +10,7 @@ class ReadCachedPublishDataCommand extends Command {
     constructor(ctx) {
         super(ctx);
         this.ualService = ctx.ualService;
-        this.dataService = ctx.dataService;
         this.fileService = ctx.fileService;
-        this.repositoryModuleManager = ctx.repositoryModuleManager;
-        this.networkModuleManager = ctx.networkModuleManager;
 
         this.errorType = ERROR_TYPE.STORE_ASSERTION_ERROR;
     }

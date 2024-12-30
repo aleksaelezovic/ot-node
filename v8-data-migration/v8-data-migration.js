@@ -408,7 +408,9 @@ async function main() {
                 process.exit(1);
             }
             logger.info(`Retrying db download and integrity check...`);
+            continue;
         }
+        break;
     }
 
     try {

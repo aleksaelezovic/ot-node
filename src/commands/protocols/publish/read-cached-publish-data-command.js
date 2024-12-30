@@ -14,6 +14,7 @@ class ReadCachedPublishDataCommand extends Command {
         this.fileService = ctx.fileService;
         this.repositoryModuleManager = ctx.repositoryModuleManager;
         this.networkModuleManager = ctx.networkModuleManager;
+        this.shardingTableService = ctx.shardingTableService;
 
         this.errorType = ERROR_TYPE.STORE_ASSERTION_ERROR;
     }
@@ -43,11 +44,18 @@ class ReadCachedPublishDataCommand extends Command {
 
         const myPeerId = this.networkModuleManager.getPeerId().toB58String();
         if (cachedData.remotePeerId === myPeerId) {
-            await this.repositoryModuleManager.saveFinalityAck(
-                publishOperationId,
-                ual,
-                cachedData.remotePeerId,
+            const isHostNodePartOfShard = await this.shardingTableService.isNodePartOfShard(
+                blockchain,
+                myPeerId,
             );
+            // Save finality ACK only if node iteslf is part of the sard
+            if (isHostNodePartOfShard) {
+                await this.repositoryModuleManager.saveFinalityAck(
+                    publishOperationId,
+                    ual,
+                    cachedData.remotePeerId,
+                );
+            }
         } else {
             command.sequence.push('findPublisherNodeCommand', 'networkFinalityCommand');
         }

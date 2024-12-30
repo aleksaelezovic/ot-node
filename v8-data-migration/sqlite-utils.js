@@ -31,7 +31,7 @@ export class SqliteDatabase {
         this._validateConnection();
 
         try {
-            const result = await this.db.get('PRAGMA integrity check');
+            const result = await this.db.get('PRAGMA integrity_check;');
             if (result.integrity_check === 'ok') {
                 logger.info('Database integrity check passed.');
                 return true;

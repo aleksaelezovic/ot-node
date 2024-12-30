@@ -21,9 +21,9 @@ class GetFindShardCommand extends FindShardCommand {
     // eslint-disable-next-line no-unused-vars
     getOperationCommandSequence(nodePartOfShard, commandData) {
         const sequence = [];
-        if (nodePartOfShard) {
-            sequence.push('localGetCommand');
-        }
+        // if (nodePartOfShard) {
+        sequence.push('localGetCommand');
+        // }
         sequence.push('networkGetCommand');
 
         return sequence;

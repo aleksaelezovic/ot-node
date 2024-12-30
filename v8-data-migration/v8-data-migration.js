@@ -399,6 +399,7 @@ async function main() {
         // Check if db is corrupted and handle accordingly
         const integrityCheck = await sqliteDb.checkIntegrity();
         if (!integrityCheck) {
+            await sqliteDb.close();
             logger.info('Db integrity check failed. Deleting corrupt db file.');
             deleteFile(dbFilePath);
 

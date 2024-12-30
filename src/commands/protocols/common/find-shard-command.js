@@ -114,6 +114,7 @@ class FindShardCommand extends Command {
         return this.continueSequence(
             {
                 ...command.data,
+                nodePartOfShard,
                 leftoverNodes: shardNodes,
                 numberOfFoundNodes: shardNodes.length + (nodePartOfShard ? 1 : 0),
             },

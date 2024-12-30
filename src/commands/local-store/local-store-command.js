@@ -40,6 +40,7 @@ class LocalStoreCommand extends Command {
             tokenId,
             minimumNumberOfNodeReplications,
             batchSize,
+            nodePartOfShard,
         } = command.data;
 
         try {
@@ -191,21 +192,27 @@ class LocalStoreCommand extends Command {
 
                 return Command.empty();
             }
-
-            const identityId = await this.blockchainModuleManager.getIdentityId(blockchain);
-            const { v, r, s, vs } = await this.signatureService.signMessage(
-                blockchain,
-                datasetRoot,
-            );
-            await this.signatureService.addSignatureToStorage(
-                NETWORK_SIGNATURES_FOLDER,
-                operationId,
-                identityId,
-                v,
-                r,
-                s,
-                vs,
-            );
+            let v;
+            let r;
+            let s;
+            let vs;
+            let identityId;
+            if (nodePartOfShard) {
+                identityId = await this.blockchainModuleManager.getIdentityId(blockchain);
+                ({ v, r, s, vs } = await this.signatureService.signMessage(
+                    blockchain,
+                    datasetRoot,
+                ));
+                await this.signatureService.addSignatureToStorage(
+                    NETWORK_SIGNATURES_FOLDER,
+                    operationId,
+                    identityId,
+                    v,
+                    r,
+                    s,
+                    vs,
+                );
+            }
 
             const {
                 v: publisherNodeV,
@@ -239,16 +246,24 @@ class LocalStoreCommand extends Command {
                 batchSize: batchSizePar,
                 minAckResponses,
             };
-
-            await this.operationService.processResponse(
-                { ...command, data: updatedData },
-                OPERATION_REQUEST_STATUS.COMPLETED,
-                {
-                    messageType: NETWORK_MESSAGE_TYPES.RESPONSES.ACK,
-                    messageData: { identityId, v, r, s, vs },
-                },
-                null,
-            );
+            if (nodePartOfShard) {
+                await this.operationService.processResponse(
+                    { ...command, data: updatedData },
+                    OPERATION_REQUEST_STATUS.COMPLETED,
+                    {
+                        messageType: NETWORK_MESSAGE_TYPES.RESPONSES.ACK,
+                        messageData: { identityId, v, r, s, vs },
+                    },
+                    null,
+                );
+            } else {
+                await this.operationService.processResponse(
+                    { ...command, data: updatedData },
+                    OPERATION_REQUEST_STATUS.FAILED,
+                    {},
+                    'Node is not part of the shard.',
+                );
+            }
         } catch (e) {
             await this.handleError(operationId, blockchain, e.message, this.errorType, true);
             return Command.empty();

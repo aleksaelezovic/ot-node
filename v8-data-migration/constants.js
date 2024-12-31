@@ -20,12 +20,13 @@ export const VISIBILITY = {
 };
 export const BATCH_SIZE = 50;
 
-export const DEFAULT_CONFIG_PATH = '/root/ot-node/current/config/config.json';
-export const NODERC_CONFIG_PATH = '/root/ot-node/.origintrail_noderc';
-export const DATA_MIGRATION_DIR = '/root/ot-node/data/data-migration';
-export const LOG_DIR = '/root/ot-node/data/data-migration/logs';
-export const ENV_PATH = '/root/ot-node/current/.env';
-export const MIGRATION_DIR = '/root/ot-node/data/migrations/';
+export const MAIN_DIR = '/root';
+export const DEFAULT_CONFIG_PATH = `${MAIN_DIR}/ot-node/current/config/config.json`;
+export const NODERC_CONFIG_PATH = `${MAIN_DIR}/ot-node/.origintrail_noderc`;
+export const DATA_MIGRATION_DIR = `${MAIN_DIR}/ot-node/data/data-migration`;
+export const LOG_DIR = `${MAIN_DIR}/ot-node/data/data-migration/logs`;
+export const ENV_PATH = `${MAIN_DIR}/ot-node/current/.env`;
+export const MIGRATION_DIR = `${MAIN_DIR}/ot-node/data/migrations/`;
 export const MIGRATION_PROGRESS_FILE = 'v8DataMigration';
 
 export const DB_URLS = {

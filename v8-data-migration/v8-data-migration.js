@@ -10,6 +10,7 @@ import {
     ensureDirectoryExists,
     ensureMigrationProgressFileExists,
     markMigrationAsSuccessfull,
+    deleteFile,
 } from './v8-data-migration-utils.js';
 import {
     getAssertionFromV6TripleStore,
@@ -263,6 +264,69 @@ async function getAssertionsInBatch(
     return v6Assertions;
 }
 
+async function downloadDb(dbFilePath) {
+    logger.time(`Database file downloading time`);
+    const maxAttempts = 3;
+    for (let i = 0; i < maxAttempts; i += 1) {
+        // Fetch the db file from the remote server
+        logger.info(
+            `Fetching ${process.env.NODE_ENV}.db file from ${DB_URLS[process.env.NODE_ENV]}. Try ${
+                i + 1
+            } of 3. This may take a while...`,
+        );
+
+        try {
+            const writer = fs.createWriteStream(dbFilePath);
+            const response = await axios({
+                url: DB_URLS[process.env.NODE_ENV],
+                method: 'GET',
+                responseType: 'stream',
+            });
+
+            // Pipe the response stream to the file
+            response.data.pipe(writer);
+
+            await new Promise((resolve, reject) => {
+                let downloadComplete = false;
+
+                response.data.on('end', () => {
+                    downloadComplete = true;
+                });
+
+                writer.on('finish', resolve);
+                writer.on('error', (err) =>
+                    reject(new Error(`Write stream error: ${err.message}`)),
+                );
+                response.data.on('error', (err) =>
+                    reject(new Error(`Download stream error: ${err.message}`)),
+                );
+                response.data.on('close', () => {
+                    if (!downloadComplete) {
+                        reject(new Error('Download stream closed before completing'));
+                    }
+                });
+            });
+            if (fs.existsSync(dbFilePath)) {
+                logger.info(`DB file downloaded successfully`);
+                break;
+            }
+            logger.error(`DB file for ${process.env.NODE_ENV} is not present after download.`);
+        } catch (error) {
+            logger.error(`Error downloading DB file: ${error.message}`);
+        }
+
+        logger.info('Deleting downloaded db file to prevent data corruption');
+        deleteFile(dbFilePath);
+
+        if (i === maxAttempts - 1) {
+            logger.error('Max db download attempts reached. Terminating process...');
+            process.exit(1);
+        }
+        logger.info(`Retrying db download...`);
+    }
+    logger.timeEnd(`Database file downloading time`);
+}
+
 async function main() {
     ensureMigrationProgressFileExists();
 
@@ -318,65 +382,36 @@ async function main() {
     // Ensure connections
     await ensureConnections(tripleStoreRepositories, tripleStoreImplementation);
 
-    // Check if db exists and if it doesn't download it to the relevant directory
-    const dbFilePath = path.join(DATA_MIGRATION_DIR, `${process.env.NODE_ENV}.db`);
-    if (!fs.existsSync(dbFilePath)) {
-        logger.info(
-            `DB file for ${process.env.NODE_ENV} does not exist in ${DATA_MIGRATION_DIR}. Downloading it...`,
-        );
-        // Fetch the db file from the remote server
-        logger.info(
-            `Fetching ${process.env.NODE_ENV}.db file from ${
-                DB_URLS[process.env.NODE_ENV]
-            }. This may take a while...`,
-        );
-        logger.time(`Database file downloading time`);
-        const writer = fs.createWriteStream(dbFilePath);
-        const response = await axios({
-            url: DB_URLS[process.env.NODE_ENV],
-            method: 'GET',
-            responseType: 'stream',
-        });
-
-        // Pipe the response stream to the file
-        response.data.pipe(writer);
-        // Wait for the file to finish downloading
-        try {
-            await new Promise((resolve, reject) => {
-                let downloadComplete = false;
-
-                response.data.on('end', () => {
-                    downloadComplete = true;
-                });
-
-                writer.on('finish', resolve);
-                writer.on('error', (err) =>
-                    reject(new Error(`Write stream error: ${err.message}`)),
-                );
-                response.data.on('error', (err) =>
-                    reject(new Error(`Download stream error: ${err.message}`)),
-                );
-                response.data.on('close', () => {
-                    if (!downloadComplete) {
-                        reject(new Error('Download stream closed before completing'));
-                    }
-                });
-            });
-        } catch (error) {
-            logger.error(`Critical error during download: ${error.message}`);
-            logger.error('Terminating process to prevent data corruption');
-            process.exit(1);
-        }
-        logger.timeEnd(`Database file downloading time`);
-
+    const maxAttempts = 2;
+    for (let i = 0; i < maxAttempts; i += 1) {
+        // Check if db exists and if it doesn't download it to the relevant directory
+        const dbFilePath = path.join(DATA_MIGRATION_DIR, `${process.env.NODE_ENV}.db`);
         if (!fs.existsSync(dbFilePath)) {
-            throw new Error(`DB file for ${process.env.NODE_ENV} could not be created.`);
+            logger.info(
+                `DB file for ${process.env.NODE_ENV} does not exist in ${DATA_MIGRATION_DIR}. Downloading it...`,
+            );
+            await downloadDb(dbFilePath);
         }
-    }
 
-    // Initialize SQLite database once before processing blockchains
-    logger.info('Initializing SQLite database');
-    await sqliteDb.initialize();
+        logger.info('Initializing SQLite database');
+        await sqliteDb.initialize();
+
+        // Check if db is corrupted and handle accordingly
+        const integrityCheck = await sqliteDb.checkIntegrity();
+        if (!integrityCheck) {
+            await sqliteDb.close();
+            logger.info('Db integrity check failed. Deleting corrupt db file.');
+            deleteFile(dbFilePath);
+
+            if (i === maxAttempts - 1) {
+                logger.error('Db integrity check failed. Terminating process...');
+                process.exit(1);
+            }
+            logger.info(`Retrying db download and integrity check...`);
+            continue;
+        }
+        break;
+    }
 
     try {
         // make sure blockchains are always migrated in this order - base, gnosis, neuroweb

@@ -39,7 +39,7 @@ class GetController extends BaseController {
                 paranetId: message.data.paranetId,
                 isOperationV0: message.data.isOperationV0,
                 assertionId: message.data.assertionId,
-                isOldContract: message.data.isOldContract,
+                isV6Contract: message.data.isV6Contract,
             },
             transactional: false,
         });

@@ -35,7 +35,7 @@ class LocalGetCommand extends Command {
             contentType,
             assertionId,
             isOperationV0,
-            isOldContract,
+            isV6Contract,
         } = command.data;
         let { knowledgeAssetId } = command.data;
         await this.operationIdService.updateOperationIdStatus(
@@ -219,7 +219,7 @@ class LocalGetCommand extends Command {
 
         const responseData = {
             assertion:
-                (isOperationV0 || notMigrated) && isOldContract
+                (isOperationV0 || notMigrated) && isV6Contract
                     ? [...(assertion?.public ?? []), ...(assertion?.private ?? [])]
                     : assertion,
             ...(includeMetadata && metadata && { metadata }),

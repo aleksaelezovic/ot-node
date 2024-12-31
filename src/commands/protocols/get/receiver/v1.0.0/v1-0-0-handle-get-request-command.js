@@ -37,7 +37,7 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
             ual,
             includeMetadata,
             isOperationV0,
-            isOldContract,
+            isV6Contract,
         } = commandData;
 
         let { assertionId, knowledgeAssetId } = commandData;
@@ -229,7 +229,7 @@ class HandleGetRequestCommand extends HandleProtocolMessageCommand {
 
         const responseData = {
             assertion:
-                (isOperationV0 || notMigrated) && isOldContract
+                (isOperationV0 || notMigrated) && isV6Contract
                     ? [...(assertion.public ?? []), ...(assertion.private ?? [])]
                     : assertion,
             ...(includeMetadata && metadata && { metadata }),

@@ -51,7 +51,7 @@ class GetRequestCommand extends ProtocolRequestCommand {
             paranetId,
             isOperationV0,
             assertionId,
-            isOldContract,
+            isV6Contract,
         } = command.data;
 
         return {
@@ -65,7 +65,7 @@ class GetRequestCommand extends ProtocolRequestCommand {
             paranetId,
             isOperationV0,
             assertionId,
-            isOldContract,
+            isV6Contract,
         };
     }
 
@@ -76,7 +76,7 @@ class GetRequestCommand extends ProtocolRequestCommand {
             knowledgeCollectionId,
             knowledgeAssetId,
             isOperationV0,
-            isOldContract,
+            isV6Contract,
         } = command.data;
 
         if (responseData?.assertion?.public) {
@@ -103,7 +103,7 @@ class GetRequestCommand extends ProtocolRequestCommand {
                     ...kcTools.groupNquadsBySubject(privateHashTriples, true),
                 );
 
-                if (!isOldContract) {
+                if (!isV6Contract) {
                     try {
                         await this.validationService.validateDatasetOnBlockchain(
                             publicKnowledgeAssetsTriplesGrouped.map((t) => t.sort()).flat(),

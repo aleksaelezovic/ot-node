@@ -3,7 +3,7 @@ import {
     OPERATION_STATUS,
     ERROR_TYPE,
     TRIPLES_VISIBILITY,
-    OLD_CONTENT_STORAGE_MAP,
+    V6_CONTENT_STORAGE_MAP,
 } from '../../../constants/constants.js';
 import BaseController from '../base-http-api-controller.js';
 
@@ -66,15 +66,14 @@ class GetController extends BaseController {
             // Get assertionId - datasetRoot
             //
 
+            const isV6Contract = Object.values(V6_CONTENT_STORAGE_MAP).some((ca) =>
+                ca.toLowerCase().includes(contract.toLowerCase()),
+            );
+
             const commandSequence = [];
             commandSequence.push('getValidateAssetCommand');
 
-            if (
-                !tripleStoreMigrationAlreadyExecuted &&
-                Object.values(OLD_CONTENT_STORAGE_MAP)
-                    .map((ca) => ca.toLowerCase())
-                    .includes(contract.toLowerCase())
-            ) {
+            if (!tripleStoreMigrationAlreadyExecuted && isV6Contract) {
                 commandSequence.push('getAssertionMerkleRootCommand');
             }
 
@@ -93,6 +92,7 @@ class GetController extends BaseController {
                     knowledgeAssetId,
                     operationId,
                     paranetUAL,
+                    isV6Contract,
                     contentType: contentType ?? TRIPLES_VISIBILITY.ALL,
                 },
                 transactional: false,

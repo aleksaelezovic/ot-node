@@ -10,11 +10,7 @@ class ReadCachedPublishDataCommand extends Command {
     constructor(ctx) {
         super(ctx);
         this.ualService = ctx.ualService;
-        this.dataService = ctx.dataService;
         this.fileService = ctx.fileService;
-        this.repositoryModuleManager = ctx.repositoryModuleManager;
-        this.networkModuleManager = ctx.networkModuleManager;
-
         this.errorType = ERROR_TYPE.STORE_ASSERTION_ERROR;
     }
 
@@ -40,17 +36,6 @@ class ReadCachedPublishDataCommand extends Command {
         }
 
         const ual = this.ualService.deriveUAL(blockchain, contractAddress, id);
-
-        const myPeerId = this.networkModuleManager.getPeerId().toB58String();
-        if (cachedData.remotePeerId === myPeerId) {
-            await this.repositoryModuleManager.saveFinalityAck(
-                publishOperationId,
-                ual,
-                cachedData.remotePeerId,
-            );
-        } else {
-            command.sequence.push('findPublisherNodeCommand', 'networkFinalityCommand');
-        }
 
         return this.continueSequence(
             {

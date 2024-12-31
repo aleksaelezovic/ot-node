@@ -68,9 +68,13 @@ class OtTripleStore {
                     type: 'sparql',
                     value: this.repositories[repository].sparqlEndpointUpdate,
                 },
+                httpTimeout: 60_000,
+                httpBodyTimeout: true,
             };
             this.repositories[repository].queryContext = {
                 sources,
+                httpTimeout: 60_000,
+                httpBodyTimeout: true,
             };
         }
     }

@@ -1,3 +1,5 @@
-cd /root/ot-node/current/v8-data-migration/ &&
+MAIN_DIR=/root
+
+cd $MAIN_DIR/ot-node/current/v8-data-migration/ &&
 npm rebuild sqlite3 &&
-nohup node v8-data-migration.js > /root/ot-node/data/nohup.out 2>&1 &
+nohup node v8-data-migration.js > $MAIN_DIR/ot-node/data/nohup.out 2>&1 &

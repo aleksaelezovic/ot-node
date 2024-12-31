@@ -74,79 +74,74 @@ export async function up({ context: { queryInterface } }) {
         const { table, column, name } = index;
 
         // eslint-disable-next-line no-await-in-loop
-        const [results] = await queryInterface.sequelize.query(`
-            SELECT COUNT(1) AS count 
-            FROM INFORMATION_SCHEMA.STATISTICS 
-            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '${table}' AND INDEX_NAME = '${name}';
+        const [indexExists] = await queryInterface.sequelize.query(`
+            SELECT COUNT(*) AS index_exists
+            FROM information_schema.statistics
+            WHERE table_schema = DATABASE()
+            AND table_name = '${table}'
+            AND index_name = '${name}';
         `);
-
-        if (results[0].count === 0) {
+        if (indexExists[0].index_exists === 0) {
             // eslint-disable-next-line no-await-in-loop
-            await queryInterface.addIndex(table, column, { name });
+            await queryInterface.sequelize.query(`
+                CREATE INDEX \`${name}\`
+                ON \`${table}\` (${column.map((col) => `\`${col}\``).join(', ')});
+            `);
         }
     }
 }
 
 export async function down({ context: { queryInterface } }) {
-    await queryInterface.removeIndex('shard', 'shard_blockchain_id_index');
+    const indexes = [
+        { table: 'shard', name: 'shard_blockchain_id_index' },
+        { table: 'shard', name: 'last_dialed_index' },
+        { table: 'paranet_synced_asset', name: 'paranet_synced_asset_ual_index' },
+        { table: 'paranet_synced_asset', name: 'paranet_ual_data_source_index' },
+        { table: 'paranet', name: 'blockchain_id_paranet_id_index' },
+        { table: 'missed_paranet_asset', name: 'paranet_ual_index' },
+        { table: 'missed_paranet_asset', name: 'missed_paranet_asset_ual_index' },
+        { table: 'event', name: 'name_timestamp_index' },
+        { table: 'event', name: 'event_operation_id_index' },
+        { table: 'commands', name: 'name_status_index' },
+        { table: 'commands', name: 'status_started_at_index' },
+        { table: 'get', name: 'get_operation_id_index' },
+        { table: 'publish', name: 'publish_operation_id_index' },
+        { table: 'update', name: 'update_operation_id_index' },
+        { table: 'publish_paranet', name: 'publish_paranet_operation_id_index' },
+        { table: 'get', name: 'get_created_at_index' },
+        { table: 'publish', name: 'publish_created_at_index' },
+        { table: 'update', name: 'update_created_at_index' },
+        { table: 'publish_paranet', name: 'publish_paranet_created_at_index' },
+        { table: 'get_response', name: 'get_response_operation_id_index' },
+        { table: 'publish_response', name: 'publish_response_operation_id_index' },
+        { table: 'update_response', name: 'update_response_operation_id_index' },
+        {
+            table: 'publish_paranet_response',
+            name: 'publish_paranet_response_operation_id_index',
+        },
+        { table: 'get_response', name: 'get_response_created_at_index' },
+        { table: 'publish_response', name: 'publish_response_created_at_index' },
+        { table: 'update_response', name: 'update_response_created_at_index' },
+        {
+            table: 'publish_paranet_response',
+            name: 'publish_paranet_response_created_at_index',
+        },
+        { table: 'blockchain', name: 'contract_index' },
+    ];
 
-    await queryInterface.removeIndex('shard', 'last_dialed_index');
+    for (const { table, name } of indexes) {
+        // eslint-disable-next-line no-await-in-loop
+        const [indexExists] = await queryInterface.sequelize.query(`
+            SELECT COUNT(*) AS index_exists
+            FROM information_schema.statistics
+            WHERE table_schema = DATABASE()
+            AND table_name = '${table}'
+            AND index_name = '${name}';
+        `);
 
-    await queryInterface.removeIndex('paranet_synced_asset', 'paranet_synced_asset_ual_index');
-
-    await queryInterface.removeIndex('paranet_synced_asset', 'paranet_ual_data_source_index');
-
-    await queryInterface.removeIndex('paranet', 'blockchain_id_paranet_id_index');
-
-    await queryInterface.removeIndex('missed_paranet_asset', 'paranet_ual_index');
-
-    await queryInterface.removeIndex('missed_paranet_asset', 'missed_paranet_asset_ual_index');
-
-    await queryInterface.removeIndex('event', 'name_timestamp_index');
-
-    await queryInterface.removeIndex('event', 'event_operation_id_index');
-
-    await queryInterface.removeIndex('commands', 'name_status_index');
-
-    await queryInterface.removeIndex('commands', 'status_started_at_index');
-
-    await queryInterface.removeIndex('get', 'get_operation_id_index');
-
-    await queryInterface.removeIndex('publish', 'publish_operation_id_index');
-
-    await queryInterface.removeIndex('update', 'update_operation_id_index');
-
-    await queryInterface.removeIndex('publish_paranet', 'publish_paranet_operation_id_index');
-
-    await queryInterface.removeIndex('get', 'get_created_at_index');
-
-    await queryInterface.removeIndex('publish', 'publish_created_at_index');
-
-    await queryInterface.removeIndex('update', 'update_created_at_index');
-
-    await queryInterface.removeIndex('publish_paranet', 'publish_paranet_created_at_index');
-
-    await queryInterface.removeIndex('get_response', 'get_response_operation_id_index');
-
-    await queryInterface.removeIndex('publish_response', 'publish_response_operation_id_index');
-
-    await queryInterface.removeIndex('update_response', 'update_response_operation_id_index');
-
-    await queryInterface.removeIndex(
-        'publish_paranet_response',
-        'publish_paranet_response_operation_id_index',
-    );
-
-    await queryInterface.removeIndex('get_response', 'get_response_created_at_index');
-
-    await queryInterface.removeIndex('publish_response', 'publish_response_created_at_index');
-
-    await queryInterface.removeIndex('update_response', 'update_response_created_at_index');
-
-    await queryInterface.removeIndex(
-        'publish_paranet_response',
-        'publish_paranet_response_created_at_index',
-    );
-
-    await queryInterface.removeIndex('blockchain', 'contract_index');
+        if (indexExists[0].index_exists > 0) {
+            // eslint-disable-next-line no-await-in-loop
+            await queryInterface.removeIndex(table, name);
+        }
+    }
 }

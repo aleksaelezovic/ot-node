@@ -11,7 +11,6 @@ class ReadCachedPublishDataCommand extends Command {
         super(ctx);
         this.ualService = ctx.ualService;
         this.fileService = ctx.fileService;
-
         this.errorType = ERROR_TYPE.STORE_ASSERTION_ERROR;
     }
 

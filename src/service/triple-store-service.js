@@ -37,7 +37,7 @@ class TripleStoreService {
         repository,
         knowledgeCollectionUAL,
         triples,
-        retries = 1,
+        retries = 5,
         retryDelay = 0,
     ) {
         this.logger.info(

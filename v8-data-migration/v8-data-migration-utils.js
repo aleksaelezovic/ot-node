@@ -73,3 +73,17 @@ export function markMigrationAsSuccessfull() {
     // close file
     fs.closeSync(file);
 }
+
+export function deleteFile(filePath) {
+    if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        logger.info(`Deleted file: ${filePath}`);
+
+        if (fs.existsSync(filePath)) {
+            logger.error(`File: ${filePath} still exists after deletion.`);
+            process.exit(1);
+        }
+    } else {
+        logger.info(`Did not delete file: ${filePath} because it does not exist.`);
+    }
+}

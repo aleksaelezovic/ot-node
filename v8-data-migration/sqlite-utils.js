@@ -27,6 +27,23 @@ export class SqliteDatabase {
         }
     }
 
+    async checkIntegrity() {
+        this._validateConnection();
+
+        try {
+            const result = await this.db.get('PRAGMA integrity_check;');
+            if (result.integrity_check === 'ok') {
+                logger.info('Database integrity check passed.');
+                return true;
+            }
+            logger.error('Database integrity check failed:', result.integrity_check);
+            return false;
+        } catch (error) {
+            logger.error('Error during integrity check:', error.message);
+            return false;
+        }
+    }
+
     async getTableExists(blockchainName) {
         this._validateConnection();
         this._validateBlockchainName(blockchainName);

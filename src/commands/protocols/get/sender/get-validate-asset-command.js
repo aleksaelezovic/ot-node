@@ -1,10 +1,6 @@
 import ValidateAssetCommand from '../../../common/validate-asset-command.js';
 import Command from '../../../command.js';
-import {
-    OPERATION_ID_STATUS,
-    ERROR_TYPE,
-    OLD_CONTENT_STORAGE_MAP,
-} from '../../../../constants/constants.js';
+import { OPERATION_ID_STATUS, ERROR_TYPE } from '../../../../constants/constants.js';
 
 class GetValidateAssetCommand extends ValidateAssetCommand {
     constructor(ctx) {
@@ -27,8 +23,15 @@ class GetValidateAssetCommand extends ValidateAssetCommand {
      * @param command
      */
     async execute(command) {
-        const { operationId, blockchain, contract, knowledgeCollectionId, ual, isOperationV0 } =
-            command.data;
+        const {
+            operationId,
+            blockchain,
+            contract,
+            knowledgeCollectionId,
+            ual,
+            isOperationV0,
+            isV6Contract,
+        } = command.data;
         await this.operationIdService.updateOperationIdStatus(
             operationId,
             blockchain,
@@ -53,13 +56,7 @@ class GetValidateAssetCommand extends ValidateAssetCommand {
             blockchain,
         );
         // TODO: Update to validate knowledge asset index
-        // TODO: Use isOldContract as variable and pass it through with command.data since it's used
-        if (
-            !isOperationV0 &&
-            Object.values(OLD_CONTENT_STORAGE_MAP).every(
-                (ca) => !ca.toLowerCase().includes(contract.toLowerCase()),
-            )
-        ) {
+        if (!isOperationV0 && !isV6Contract) {
             const isValidUal = await this.validationService.validateUal(
                 blockchain,
                 contract,

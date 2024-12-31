@@ -24,7 +24,7 @@ class PublishFindShardCommand extends FindShardCommand {
             sequence.push('publishValidateAssetCommand');
         }
 
-        if (nodePartOfShard && !commandData.isOperationV0) {
+        if (!commandData.isOperationV0) {
             sequence.push('localStoreCommand');
         } else {
             sequence.push('networkPublishCommand');

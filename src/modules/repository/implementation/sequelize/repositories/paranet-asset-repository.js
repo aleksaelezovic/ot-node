@@ -97,8 +97,15 @@ class ParanetAssetRepository {
         return !!missedParanetAssetRecord;
     }
 
+    async getParanetSyncedAssetRecordByUAL(ual, paranetUal, options = {}) {
+        return this.model.findOne({
+            where: { ual, paranetUal, isSynced: true },
+            ...options,
+        });
+    }
+
     async paranetSyncedAssetRecordExists(ual, paranetUal, options = {}) {
-        const paranetSyncedAssetRecord = await this.model.getParanetSyncedAssetRecordByUAL(
+        const paranetSyncedAssetRecord = await this.getParanetSyncedAssetRecordByUAL(
             ual,
             paranetUal,
             options,

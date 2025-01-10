@@ -380,12 +380,13 @@ class RepositoryModuleManager extends BaseModuleManager {
         );
     }
 
-    async getMissedParanetAssetRecords(blockchainId, options = {}) {
-        return this.getRepository('missed_paranet_asset').getMissedParanetAssetRecords(
-            blockchainId,
-            options,
-        );
-    }
+    // TODO: remove
+    // async getMissedParanetAssetRecords(blockchainId, options = {}) {
+    //     return this.getRepository('missed_paranet_asset').getMissedParanetAssetRecords(
+    //         blockchainId,
+    //         options,
+    //     );
+    // }
 
     async missedParanetAssetRecordExists(ual, options = {}) {
         return this.getRepository('paranet_asset').missedParanetAssetRecordExists(ual, options);
@@ -399,12 +400,13 @@ class RepositoryModuleManager extends BaseModuleManager {
         );
     }
 
-    async removeMissedParanetAssetRecordsByUAL(ual, options = {}) {
-        return this.getRepository('missed_paranet_asset').removeMissedParanetAssetRecordsByUAL(
-            ual,
-            options,
-        );
-    }
+    // TODO: remove
+    // async removeMissedParanetAssetRecordsByUAL(ual, options = {}) {
+    //     return this.getRepository('missed_paranet_asset').removeMissedParanetAssetRecordsByUAL(
+    //         ual,
+    //         options,
+    //     );
+    // }
 
     async getMissedParanetAssetsRecordsWithRetryCount(
         paranetUal,
@@ -459,6 +461,7 @@ class RepositoryModuleManager extends BaseModuleManager {
         dataSource,
         options = {},
     ) {
+        // TODO: implement
         return this.getRepository('paranet_asset').createParanetSyncedAssetRecord(
             blockchainId,
             ual,
@@ -473,14 +476,16 @@ class RepositoryModuleManager extends BaseModuleManager {
     }
 
     async getParanetSyncedAssetRecordByUAL(ual, options = {}) {
+        // TODO: implement
         return this.getRepository('paranet_asset').getParanetSyncedAssetRecordByUAL(ual, options);
     }
 
-    async getParanetSyncedAssetRecordsCountByDataSource(paranetUal, options = {}) {
-        return this.getRepository(
-            'paranet_synced_asset',
-        ).getParanetSyncedAssetRecordsCountByDataSource(paranetUal, options);
-    }
+    // TODO: remove
+    // async getParanetSyncedAssetRecordsCountByDataSource(paranetUal, options = {}) {
+    //     return this.getRepository(
+    //         'paranet_synced_asset',
+    //     ).getParanetSyncedAssetRecordsCountByDataSource(paranetUal, options);
+    // }
 
     async paranetSyncedAssetRecordExists(ual, options = {}) {
         return this.getRepository('paranet_asset').paranetSyncedAssetRecordExists(ual, options);

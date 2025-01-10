@@ -450,6 +450,7 @@ class RepositoryModuleManager extends BaseModuleManager {
         return this.getRepository('paranet').getParanetsBlockchains(options);
     }
 
+    // TODO: check if used anywhere, remove
     async createParanetSyncedAssetRecord(
         blockchainId,
         ual,
@@ -461,7 +462,6 @@ class RepositoryModuleManager extends BaseModuleManager {
         dataSource,
         options = {},
     ) {
-        // TODO: implement
         return this.getRepository('paranet_asset').createParanetSyncedAssetRecord(
             blockchainId,
             ual,
@@ -475,8 +475,8 @@ class RepositoryModuleManager extends BaseModuleManager {
         );
     }
 
+    // TODO: check if used anywhere, remove
     async getParanetSyncedAssetRecordByUAL(ual, options = {}) {
-        // TODO: implement
         return this.getRepository('paranet_asset').getParanetSyncedAssetRecordByUAL(ual, options);
     }
 

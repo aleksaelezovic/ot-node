@@ -58,8 +58,12 @@ export async function up({ context: { queryInterface, Sequelize } }) {
             defaultValue: Sequelize.literal('NOW()'),
         },
     });
+    await queryInterface.addConstraint('paranet_asset', {
+        fields: ['ual', 'paranet_ual'],
+        type: 'unique',
+    });
 }
 
 export async function down({ context: { queryInterface } }) {
-    await queryInterface.dropTable('paranet_assets');
+    await queryInterface.dropTable('paranet_asset');
 }

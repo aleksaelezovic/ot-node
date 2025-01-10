@@ -15,9 +15,10 @@ import OperationResponseRepository from './repositories/operation-response.js';
 import ShardRepository from './repositories/shard-repository.js';
 import TokenRepository from './repositories/token-repository.js';
 import UserRepository from './repositories/user-repository.js';
-import MissedParanetAssetRepository from './repositories/missed-paranet-asset-repository.js';
-import ParanetSyncedAssetRepository from './repositories/paranet-synced-asset-repository.js';
+// import MissedParanetAssetRepository from './repositories/missed-paranet-asset-repository.js';
+// import ParanetSyncedAssetRepository from './repositories/paranet-synced-asset-repository.js';
 import FinalityStatusRepository from './repositories/finality-status-repository.js';
+import ParanetAssetRepository from './repositories/paranet-asset-repository.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -38,8 +39,9 @@ class SequelizeRepository {
             command: new CommandRepository(this.models),
             event: new EventRepository(this.models),
             paranet: new ParanetRepository(this.models),
-            paranet_synced_asset: new ParanetSyncedAssetRepository(this.models),
-            missed_paranet_asset: new MissedParanetAssetRepository(this.models),
+            // paranet_synced_asset: new ParanetSyncedAssetRepository(this.models),
+            // missed_paranet_asset: new MissedParanetAssetRepository(this.models),
+            paranet_asset: new ParanetAssetRepository(this.models),
             operation_id: new OperationIdRepository(this.models),
             operation: new OperationRepository(this.models),
             operation_response: new OperationResponseRepository(this.models),

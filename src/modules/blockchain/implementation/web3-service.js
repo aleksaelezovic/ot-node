@@ -1048,6 +1048,20 @@ class Web3Service {
         // );
     }
 
+    async getParanetKnowledgeCollectionsWithPagination(paranetId, offset, limit) {
+        throw new Error(
+            `Not implemented getParanetKnowledgeCollectionsWithPagination(${paranetId}, ${offset}, ${limit}})`,
+        );
+        // TODO: implement
+
+        // return this.callContractFunction(
+        //     this.contracts.ParanetsRegistry,
+        //     'getKnowledgeAssetsWithPagination',
+        //     [paranetId, offset, limit],
+        //     CONTRACTS.PARANETS_REGISTRY,
+        // );
+    }
+
     async getParanetKnowledgeAssetsCount(paranetId) {
         return this.callContractFunction(
             this.contracts.ParanetsRegistry,

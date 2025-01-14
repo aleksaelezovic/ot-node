@@ -54,12 +54,13 @@ class ParanetSyncCommand extends Command {
 
         const totalMissedAssetsCount =
             await this.repositoryModuleManager.getCountOfMissedAssetsOfParanet(paranetUAL);
-        const missedAssetsCount =
-            await this.repositoryModuleManager.getMissedParanetAssetsRecordsWithRetryCount(
+        const missedAssetsCount = await this.repositoryModuleManager
+            .getMissedParanetAssetsRecordsWithRetryCount(
                 paranetUAL,
                 PARANET_SYNC_RETRIES_LIMIT,
                 PARANET_SYNC_RETRY_DELAY_MS,
-            );
+            )
+            .then((data) => data.length);
 
         const paranetRepository = this.paranetService.getParanetRepositoryName(paranetUAL);
 

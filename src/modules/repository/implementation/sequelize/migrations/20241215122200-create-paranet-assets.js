@@ -17,22 +17,6 @@ export async function up({ context: { queryInterface, Sequelize } }) {
             type: Sequelize.STRING,
             allowNull: false,
         },
-        public_assertion_id: {
-            type: Sequelize.STRING,
-            allowNull: true,
-        },
-        private_assertion_id: {
-            type: Sequelize.STRING,
-            allowNull: true,
-        },
-        sender: {
-            type: Sequelize.STRING,
-            allowNull: true,
-        },
-        transaction_hash: {
-            type: Sequelize.STRING,
-            allowNull: true,
-        },
         error_message: {
             type: Sequelize.TEXT,
             allowNull: true,

@@ -19,22 +19,6 @@ export default (sequelize, DataTypes) => {
                 allowNull: false,
                 type: DataTypes.STRING,
             },
-            publicAssertionId: {
-                allowNull: true,
-                type: DataTypes.STRING,
-            },
-            privateAssertionId: {
-                allowNull: true,
-                type: DataTypes.STRING,
-            },
-            sender: {
-                allowNull: true,
-                type: DataTypes.STRING,
-            },
-            transactionHash: {
-                allowNull: true,
-                type: DataTypes.STRING,
-            },
             errorMessage: {
                 allowNull: true,
                 type: DataTypes.TEXT,

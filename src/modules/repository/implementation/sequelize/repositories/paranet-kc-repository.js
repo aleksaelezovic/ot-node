@@ -3,7 +3,7 @@ import Sequelize from 'sequelize';
 class ParanetKcRepository {
     constructor(models) {
         this.sequelize = models.sequelize;
-        this.model = models.paranet_asset;
+        this.model = models.paranet_kc;
     }
 
     async createParanetKcRecords(paranetUal, blockchainId, uals, options = {}) {

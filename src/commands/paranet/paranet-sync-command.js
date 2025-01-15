@@ -31,6 +31,7 @@ class ParanetSyncCommand extends Command {
         this.errorType = ERROR_TYPE.PARANET.PARANET_SYNC_ERROR;
     }
 
+    // TODO: Fix logs? Use word 'Knowledge Collection' or 'Collection' instead of 'Asset'.
     async execute(command) {
         const { blockchain, operationId, paranetUAL, paranetId, paranetMetadata } = command.data;
 
@@ -41,14 +42,12 @@ class ParanetSyncCommand extends Command {
             `Paranet sync: Starting paranet sync for paranet: ${paranetUAL} (${paranetId}), operation ID: ${operationId}, access policy ${paranetNodesAccessPolicy}`,
         );
 
-        // Fetch counts from blockchain and database
         const countContract = (
             await this.blockchainModuleManager.getParanetKnowledgeCollectionCount(
                 blockchain,
                 paranetId,
             )
         ).toNumber();
-
         const countDatabase = await this.repositoryModuleManager.getParanetKcCount(paranetUAL);
 
         const missingUALs = await this.blockchainModuleManager
@@ -84,6 +83,7 @@ class ParanetSyncCommand extends Command {
             return Command.repeat();
         }
 
+        // #region Sync batch
         const syncBatch = await this.repositoryModuleManager.getParanetKcSyncBatch(
             paranetUAL,
             PARANET_SYNC_RETRIES_LIMIT,
@@ -115,6 +115,7 @@ class ParanetSyncCommand extends Command {
                 `Failed missed assets syncs: ${countSyncFailed}  for paranet: ${paranetUAL} ` +
                 `(${paranetId}), operation ID: ${operationId}!`,
         );
+        // #endregion
 
         await this.operationIdService.updateOperationIdStatusWithValues(
             operationId,
@@ -127,6 +128,7 @@ class ParanetSyncCommand extends Command {
         return Command.repeat();
     }
 
+    /** **NOTE:** Throws errors! */
     async syncKcState(
         paranetUAL,
         ual,
@@ -140,6 +142,8 @@ class ParanetSyncCommand extends Command {
         const getOperationId = await this.operationIdService.generateOperationId(
             OPERATION_ID_STATUS.GET.GET_START,
         );
+
+        // #region GET (LOCAL)
         this.operationIdService.updateOperationIdStatus(
             getOperationId,
             blockchain,
@@ -187,10 +191,13 @@ class ParanetSyncCommand extends Command {
             getResult?.status !== OPERATION_ID_STATUS.FAILED &&
             getResult?.status !== OPERATION_ID_STATUS.COMPLETED
         );
+        // #endregion
 
+        // #region GET (NETWORK)
         if (getResult?.status !== OPERATION_ID_STATUS.COMPLETED) {
             this.logger.info(`Local GET failed for tokenId: ${tokenId}, attempting network GET.`);
 
+            // TODO: Fix networkGet
             const networkCommandName =
                 paranetNodesAccessPolicy === 'OPEN'
                     ? 'networkGetCommand'
@@ -225,6 +232,7 @@ class ParanetSyncCommand extends Command {
                 getResult?.status !== OPERATION_ID_STATUS.COMPLETED
             );
         }
+        // #endregion NETWORK END
 
         if (getResult?.status !== OPERATION_ID_STATUS.COMPLETED) {
             throw new Error(
@@ -247,6 +255,7 @@ class ParanetSyncCommand extends Command {
             ual,
             data.assertion,
         );
+        // TODO: Curated paranets, paranetNodesAccessPolicy
 
         /*
             this doesnt work for v8
@@ -277,6 +286,17 @@ class ParanetSyncCommand extends Command {
             */
     }
 
+    /**
+     * Syncs all states ("merkle roots") of a Knowledge Collection in a paranet.
+     *
+     * @param {string} paranetUAL Universal Asset Locator of the paranet
+     * @param {string} ual Universal Asset Locator of the Knowledge Collection
+     * @param {string} paranetId Id of paranet, stored on-chain. Provided in command options.
+     * @param {'OPEN'|'CURATED'} paranetNodesAccessPolicy Node access policy, enum string indicating paranet type.
+     * @param {string} operationId Local database id of sync operation. Needed for logging.
+     *
+     * @returns {Promise<null|Error>} Returns `null` if sync of all states was successful, otherwise `Error` which broke the operation.
+     */
     async syncKc(paranetUAL, ual, paranetId, paranetNodesAccessPolicy, operationId) {
         try {
             this.logger.info(
@@ -284,25 +304,25 @@ class ParanetSyncCommand extends Command {
             );
 
             const { blockchain, contract, tokenId } = this.ualService.resolveUAL(ual);
-            const assertionIds =
+            const merkleRoots =
                 await this.blockchainModuleManager.getKnowledgeCollectionMerkleRoots(
                     blockchain,
                     contract,
                     tokenId,
                 );
 
-            for (let stateIndex = 0; stateIndex < assertionIds.length; stateIndex += 1) {
+            for (let stateIndex = 0; stateIndex < merkleRoots.length; stateIndex += 1) {
                 this.logger.debug(
-                    `Paranet sync: Fetching state: ${assertionIds[stateIndex]} index: ${
+                    `Paranet sync: Fetching state: ${merkleRoots[stateIndex]} index: ${
                         stateIndex + 1
-                    } of ${assertionIds.length} for asset with ual: ${ual}.`,
+                    } of ${merkleRoots.length} for asset with ual: ${ual}.`,
                 );
 
                 await this.syncKcState(
                     paranetUAL,
                     ual,
                     stateIndex,
-                    assertionIds[stateIndex],
+                    merkleRoots[stateIndex],
                     paranetId,
                     paranetNodesAccessPolicy,
                 );
@@ -314,6 +334,7 @@ class ParanetSyncCommand extends Command {
             this.logger.warn(
                 `Paranet sync: Failed to sync asset: ${ual} for paranet: ${paranetId}, error: ${error}`,
             );
+
             await this.repositoryModuleManager.paranetKcIncrementRetries(
                 paranetUAL,
                 ual,

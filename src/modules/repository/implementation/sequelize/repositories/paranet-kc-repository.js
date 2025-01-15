@@ -47,12 +47,19 @@ class ParanetKcRepository {
             where: {
                 paranetUal,
                 isSynced: false,
-                retries: {
-                    [Sequelize.Op.lt]: maxRetries,
-                },
-                updated_at: {
-                    [Sequelize.Op.lte]: new Date(Date.now() - delayInMs),
-                },
+                [Sequelize.Op.and]: [
+                    { retries: { [Sequelize.Op.lt]: maxRetries } },
+                    {
+                        [Sequelize.Op.or]: [
+                            { retries: 0 },
+                            {
+                                updatedAt: {
+                                    [Sequelize.Op.lte]: new Date(Date.now() - delayInMs),
+                                },
+                            },
+                        ],
+                    },
+                ],
             },
             order: [['retries', 'DESC']],
             ...options,

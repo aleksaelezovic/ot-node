@@ -48,13 +48,7 @@ export default (sequelize, DataTypes) => {
                     fields: ['ual', 'paranetUal'], // Composite unique constraint on `ual` and `paranetUal`
                 },
                 {
-                    fields: ['updatedAt', 'retries', 'isSynced'],
-                },
-                {
-                    fields: ['ual', 'paranetUal'],
-                },
-                {
-                    fields: ['isSynced', 'paranetUal'],
+                    fields: ['paranetUal', 'isSynced', 'retries', 'updatedAt'],
                 },
             ],
         },

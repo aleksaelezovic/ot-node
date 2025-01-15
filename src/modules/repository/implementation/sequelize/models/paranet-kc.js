@@ -1,6 +1,6 @@
 export default (sequelize, DataTypes) => {
-    const paranetAsset = sequelize.define(
-        'paranet_asset',
+    const paranetKC = sequelize.define(
+        'paranet_kc',
         {
             id: {
                 autoIncrement: true,
@@ -60,9 +60,9 @@ export default (sequelize, DataTypes) => {
         },
     );
 
-    paranetAsset.associate = () => {
+    paranetKC.associate = () => {
         // Define associations here if needed
     };
 
-    return paranetAsset;
+    return paranetKC;
 };

@@ -1,5 +1,5 @@
 export async function up({ context: { queryInterface, Sequelize } }) {
-    await queryInterface.createTable('paranet_asset', {
+    await queryInterface.createTable('paranet_kc', {
         id: {
             type: Sequelize.INTEGER,
             primaryKey: true,
@@ -42,12 +42,12 @@ export async function up({ context: { queryInterface, Sequelize } }) {
             defaultValue: Sequelize.literal('NOW()'),
         },
     });
-    await queryInterface.addConstraint('paranet_asset', {
+    await queryInterface.addConstraint('paranet_kc', {
         fields: ['ual', 'paranet_ual'],
         type: 'unique',
     });
 }
 
 export async function down({ context: { queryInterface } }) {
-    await queryInterface.dropTable('paranet_asset');
+    await queryInterface.dropTable('paranet_kc');
 }

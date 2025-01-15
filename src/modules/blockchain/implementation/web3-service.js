@@ -1048,9 +1048,9 @@ class Web3Service {
         // );
     }
 
-    async getParanetKnowledgeCollectionsWithPagination(paranetId, offset, limit) {
+    async getParanetKnowledgeCollectionLocatorsWithPagination(paranetId, offset, limit) {
         throw new Error(
-            `Not implemented getParanetKnowledgeCollectionsWithPagination(${paranetId}, ${offset}, ${limit}})`,
+            `Not implemented getParanetKnowledgeCollectionLocatorsWithPagination(${paranetId}, ${offset}, ${limit}})`,
         );
         // TODO: implement
 
@@ -1061,42 +1061,6 @@ class Web3Service {
         //     CONTRACTS.PARANETS_REGISTRY,
         // );
     }
-
-    async getParanetKnowledgeCollectionLocator(knowledgeCollectionId) {
-        throw new Error(
-            `Not implemented getParanetKnowledgeAssetLocator(${knowledgeCollectionId})`,
-        );
-        // TODO: implement
-
-        // const [knowledgeAssetStorageContract, kaTokenId] = await this.callContractFunction(
-        //     this.contracts.ParanetKnowledgeAssetsRegistry,
-        //     'getKnowledgeAssetLocator',
-        //     [knowledgeAssetId],
-        // );
-        // const tokenId = kaTokenId.toNumber();
-        // const knowledgeAssetLocator = { knowledgeAssetStorageContract, tokenId };
-        // return knowledgeAssetLocator;
-    }
-
-    // TODO: remove?
-    // async getParanetKnowledgeAssetsCount(paranetId) {
-    //     return this.callContractFunction(
-    //         this.contracts.ParanetsRegistry,
-    //         'getKnowledgeAssetsCount',
-    //         [paranetId],
-    //         CONTRACTS.PARANETS_REGISTRY,
-    //     );
-    // }
-
-    // TODO: remove?
-    // async getParanetKnowledgeAssetsWithPagination(paranetId, offset, limit) {
-    //     return this.callContractFunction(
-    //         this.contracts.ParanetsRegistry,
-    //         'getKnowledgeAssetsWithPagination',
-    //         [paranetId, offset, limit],
-    //         CONTRACTS.PARANETS_REGISTRY,
-    //     );
-    // }
 
     async getParanetMetadata(paranetId) {
         return this.callContractFunction(
@@ -1124,18 +1088,6 @@ class Web3Service {
             CONTRACTS.PARANETS_REGISTRY,
         );
     }
-
-    // TODO: remove?
-    // async getParanetKnowledgeAssetLocator(knowledgeAssetId) {
-    //     const [knowledgeAssetStorageContract, kaTokenId] = await this.callContractFunction(
-    //         this.contracts.ParanetKnowledgeAssetsRegistry,
-    //         'getKnowledgeAssetLocator',
-    //         [knowledgeAssetId],
-    //     );
-    //     const tokenId = kaTokenId.toNumber();
-    //     const knowledgeAssetLocator = { knowledgeAssetStorageContract, tokenId };
-    //     return knowledgeAssetLocator;
-    // }
 
     async paranetExists(paranetId) {
         return this.callContractFunction(

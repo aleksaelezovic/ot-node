@@ -46,9 +46,11 @@ export async function up({ context: { queryInterface, Sequelize } }) {
         fields: ['ual', 'paranet_ual'],
         type: 'unique',
     });
-    await queryInterface.addIndex('paranet_kc', {
-        fields: ['paranetUal', 'isSynced', 'retries', 'updatedAt'],
-    });
+    await queryInterface.addIndex(
+        'paranet_kc',
+        ['paranetUal', 'isSynced', 'retries', 'updatedAt'],
+        { name: 'idx_paranet_kc_sync_batch' },
+    );
 
     const [[{ triggerInsertExists }]] = await queryInterface.sequelize.query(`
         SELECT COUNT(*) AS triggerInsertExists
@@ -84,5 +86,6 @@ export async function up({ context: { queryInterface, Sequelize } }) {
 }
 
 export async function down({ context: { queryInterface } }) {
+    await queryInterface.removeIndex('paranet_kc', 'idx_paranet_kc_sync_batch');
     await queryInterface.dropTable('paranet_kc');
 }
